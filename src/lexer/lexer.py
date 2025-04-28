@@ -37,7 +37,7 @@ tokens = (
   "WHILE",
 )
 
-# reserved words
+# Reserved words
 reserved = {
     "do": "DO",
     "else": "ELSE",
@@ -109,8 +109,3 @@ def t_error(t):
 
 
 lexer = lex.lex()
-
-
-
-
-
