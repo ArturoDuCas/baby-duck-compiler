@@ -84,7 +84,7 @@ def p_param_list(p):
 def p_param_list_helper(p):
     """param_list_helper : COMMA param param_list_helper
                         | empty"""
-    if len(p) > 1:  # first production
+    if len(p) == 4:  # first production
         p[0] = [p[2]] + p[3]
     else:
         p[0] = []
@@ -132,7 +132,7 @@ def p_condition(p):
 def p_else_part(p):
     """else_part : ELSE body
                   | empty"""    
-    if len(p) > 1:  # first production
+    if len(p) == 3:  # first production
         p[0] = p[2]
     else:
         p[0] = None
@@ -164,7 +164,7 @@ def p_args_list(p):
 def p_args_list_helper(p):
     """args_list_helper : COMMA expresion args_list_helper
                         | empty"""
-    if len(p) > 1:  # first production
+    if len(p) == 4:  # first production
         p[0] = [p[2]] + p[3]
     else:
         p[0] = []
@@ -185,7 +185,7 @@ def p_print_options(p):
 def p_more_expressions(p):
     """more_expressions : COMMA print_options
                         | empty"""
-    if len(p) > 1:  # first production
+    if len(p) == 3:  # first production
         p[0] = p[2]
     else:
         p[0] = []
