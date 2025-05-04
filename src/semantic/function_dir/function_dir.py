@@ -21,10 +21,8 @@ class FunctionDir:
     
     def __init__(self):
         self._dir: FunctionDirType = {}    
-        
-        # initialize the global function (main program)
-        self._dir[GLOBAL_FUNC_NAME] = Function(GLOBAL_FUNC_TYPE, VarTable())
-    
+
+
     def add_function(self, name: str, func_type: str) -> None:
         """
         Adds a function to the directory.
@@ -75,6 +73,12 @@ class FunctionDir:
                 raise UndeclaredVariableError(var_name)
         
         return var
+
+    def reset(self) -> None:
+        """
+        Resets the function directory to its initial state.
+        """
+        self._dir = {}
 
 
     def __repr__(self) -> str:

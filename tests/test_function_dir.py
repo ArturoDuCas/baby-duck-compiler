@@ -6,12 +6,13 @@ from src.semantic.semantic_errors import (
     DuplicateVariableError,
     UndeclaredVariableError,
 )
-from src.semantic.constants import GLOBAL_FUNC_NAME
+from src.semantic.constants import GLOBAL_FUNC_NAME, GLOBAL_FUNC_TYPE
 
 
 @pytest.fixture
 def function_dir():
     fd = FunctionDir()
+    fd.add_function(GLOBAL_FUNC_NAME, GLOBAL_FUNC_TYPE)
     fd.add_function("main", "void")
     return fd
 
