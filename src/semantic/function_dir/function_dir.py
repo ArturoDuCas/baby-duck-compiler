@@ -1,4 +1,4 @@
-from src.semantic.var_table import VarTable
+from src.semantic.var_table import VarTable, Var
 from src.semantic.semantic_errors import DuplicateFunctionError, UndeclaredFunctionError
 from dataclasses import dataclass
 
@@ -20,6 +20,7 @@ class FunctionDir:
     
     def __init__(self):
         self._dir: FunctionDirType = {}
+        self._global_var_table = VarTable() # global variables declared at the top level
     
     
     def add_function(self, name: str, func_type: str) -> None:
@@ -36,6 +37,10 @@ class FunctionDir:
         """
         Adds a variable to the function's variable table.
         """
+        if func_name == "global":
+            self._global_var_table.add_var(var_name, var_type)
+            return
+        
         func = self._dir.get(func_name)
 
         if func is None:
@@ -53,7 +58,17 @@ class FunctionDir:
             raise UndeclaredFunctionError(name)
         return func
 
-    
+    def get_var(self, func_name: str, var_name: str) -> Var:
+        """
+        Returns the variable with the given name from the function's variable table.
+        """
+        if func_name == "global":
+            return self._global_var_table.get_var(var_name)
+        
+        func = self.get_function(func_name)
+        return func.var_table.get_var(var_name)
+
+
     def __repr__(self) -> str:
         lines = ["Function Directory:"]
         for name, func in self._dir.items():
