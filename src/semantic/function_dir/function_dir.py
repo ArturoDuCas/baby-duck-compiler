@@ -1,5 +1,6 @@
 from src.semantic.var_table import VarTable, Var
 from src.semantic.semantic_errors import DuplicateFunctionError, UndeclaredFunctionError
+from src.semantic.constants import GLOBAL_FUNC_NAME
 from dataclasses import dataclass
 
 
@@ -37,7 +38,7 @@ class FunctionDir:
         """
         Adds a variable to the function's variable table.
         """
-        if func_name == "global":
+        if func_name == GLOBAL_FUNC_NAME:
             self._global_var_table.add_var(var_name, var_type)
             return
         
@@ -62,7 +63,7 @@ class FunctionDir:
         """
         Returns the variable with the given name from the function's variable table.
         """
-        if func_name == "global":
+        if func_name == GLOBAL_FUNC_NAME:
             return self._global_var_table.get_var(var_name)
         
         func = self.get_function(func_name)
