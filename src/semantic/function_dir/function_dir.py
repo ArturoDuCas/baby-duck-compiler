@@ -1,6 +1,6 @@
 from src.semantic.var_table import VarTable, Var
-from src.semantic.semantic_errors import DuplicateFunctionError, UndeclaredFunctionError
-from src.semantic.constants import GLOBAL_FUNC_NAME
+from src.semantic.semantic_errors import DuplicateFunctionError, UndeclaredFunctionError, UndeclaredVariableError
+from src.semantic.constants import GLOBAL_FUNC_NAME, GLOBAL_FUNC_TYPE
 from dataclasses import dataclass
 
 
@@ -20,9 +20,10 @@ class FunctionDir:
     """
     
     def __init__(self):
-        self._dir: FunctionDirType = {}
-        self._global_var_table = VarTable() # global variables declared at the top level
-    
+        self._dir: FunctionDirType = {}    
+        
+        # initialize the global function (main program)
+        self._dir[GLOBAL_FUNC_NAME] = Function(GLOBAL_FUNC_TYPE, VarTable())
     
     def add_function(self, name: str, func_type: str) -> None:
         """
@@ -38,15 +39,7 @@ class FunctionDir:
         """
         Adds a variable to the function's variable table.
         """
-        if func_name == GLOBAL_FUNC_NAME:
-            self._global_var_table.add_var(var_name, var_type)
-            return
-        
-        func = self._dir.get(func_name)
-
-        if func is None:
-            raise UndeclaredFunctionError(func_name)
-        
+        func = self.get_function(func_name)     
         func.var_table.add_var(var_name, var_type)
 
 
@@ -59,15 +52,29 @@ class FunctionDir:
             raise UndeclaredFunctionError(name)
         return func
 
-    def get_var(self, func_name: str, var_name: str) -> Var:
+    def get_var_minimal(self, func_name: str, var_name: str) -> Var:
         """
         Returns the variable with the given name from the function's variable table.
         """
-        if func_name == GLOBAL_FUNC_NAME:
-            return self._global_var_table.get_var(var_name)
         
         func = self.get_function(func_name)
         return func.var_table.get_var(var_name)
+
+    
+    def get_var(self, func_name: str, var_name: str) -> Var:
+        """
+        Returns the variable with the given name from the function's variable table.
+        It also checks if the variable is declared in the global scope.
+        """
+        
+        var = self.get_var_minimal(func_name, var_name)
+        if var is None:
+            # check in the global function
+            var = self.get_var_minimal(GLOBAL_FUNC_NAME, var_name)
+            if var is None:
+                raise UndeclaredVariableError(var_name)
+        
+        return var
 
 
     def __repr__(self) -> str:

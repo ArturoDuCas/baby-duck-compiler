@@ -28,14 +28,12 @@ class VarTable:
         
         self._table[name] = Var(var_type)
         
-    def get_var(self, name: str) -> Var:
+    def get_var(self, name: str) -> Var | None:
         """
-        Returns the variable with the given name.
+        Returns the variable with the given name, or None if not found.
         """
-        var = self._table.get(name)
-        if var is None:
-            raise UndeclaredVariableError(name)
-        return var
+        
+        return self._table.get(name)
 
     def __repr__(self) -> str:
         return f"VarTable({self._table})"
