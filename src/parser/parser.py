@@ -1,12 +1,15 @@
 import ply.yacc as yacc
-from src.lexer.lexer import tokens
+from src.lexer.lexer import tokens # even though it is not used, it is needed to parse the tokens
 from src.syntax_tree.node import Node
+from src.semantic.semantic_state import function_dir
+from src.semantic.constants import GLOBAL_FUNC_NAME, GLOBAL_FUNC_TYPE, VOID_FUNC_TYPE
 
 
 # ---------------------------------------------------------------------------
 #  Top Level
 def p_program(p):
     """program : PROGRAM ID SEMICOLON vars_or_empty funcs_or_empty MAIN body END"""
+    
     p[0] = Node("Program", [p[2], p[4], p[5], p[7]])
 
 
@@ -28,6 +31,13 @@ def p_vars(p):
 def p_vars_declaration(p):
     """vars_declaration : ID more_ids COLON type SEMICOLON"""
     ids = [p[1]] + p[2]
+    var_type = p.parser.current_type
+    
+    scope = p.parser.current_function
+    for id in ids:
+        # NP: add the variable to the function directory
+        function_dir.add_var_to_function(scope, id, var_type)
+    
     p[0] = Node("VarsDecl", [ids, p[4]])
 
 
@@ -50,22 +60,48 @@ def p_more_ids(p):
 def p_type(p):
     """type : INT
             | FLOAT"""
+
+    # NP: set the current type
+    p.parser.current_type = p[1]  
     p[0] = Node("Type", [p[1]])
 
 # ---------------------------------------------------------------------------
 #  Functions
 def p_funcs_or_empty(p):
     """funcs_or_empty : funcs funcs_or_empty
-                      | empty"""
+                        | empty"""
     if len(p) == 3:  # first production
         p[0] = [p[1]] + p[2]
     else:
         p[0] = []
 
-def p_funcs(p):
-    """funcs : VOID ID L_PARENT param_list R_PARENT L_BRACK vars_or_empty body R_BRACK SEMICOLON"""
-    p[0] = Node("Func", [p[2], p[4], p[7], p[8]])
+def p_func_header(p):
+    """func_header : VOID ID L_PARENT param_list R_PARENT L_BRACK"""
 
+    func_name = p[2]
+    
+    # NP: add the function to the function directory
+    function_dir.add_function(func_name, VOID_FUNC_TYPE)
+    p.parser.current_function = func_name
+    p[0] = None
+
+
+def p_func_footer(p):
+    """func_footer : R_BRACK SEMICOLON"""
+    
+    # NP: go back to the global function
+    p.parser.current_function = GLOBAL_FUNC_NAME
+    p[0] = None
+
+
+def p_funcs(p):
+    """funcs : func_header vars_or_empty body func_footer"""
+    p[0] = Node("Func", [
+        p[1], 
+        p[2], 
+        p[3][0], 
+        p[3][1]
+        ])
 
 def p_param(p):
     """param : ID COLON type"""
@@ -74,8 +110,8 @@ def p_param(p):
 
 def p_param_list(p):
     """param_list : param param_list_helper
-                  | empty"""
-    if len(p) > 1:  # first production
+                | empty"""
+    if len(p) == 3:  # first production
         p[0] = [p[1]] + p[2]
     else:
         p[0] = []
@@ -155,7 +191,7 @@ def p_f_call(p):
 def p_args_list(p):
     """args_list : expresion args_list_helper
                 | empty"""
-    if len(p) > 1:  # first production
+    if len(p) == 3:  # first production
         p[0] = [p[1]] + p[2]
     else:
         p[0] = []
@@ -318,3 +354,5 @@ def p_error(p):
 
 
 parser = yacc.yacc(start='program')
+parser.current_function = GLOBAL_FUNC_NAME 
+parser.current_type = None 
