@@ -1,3 +1,3 @@
-from .var_table import VarTable
+from .var_table import VarTable, VarTableType
 
-__all__ = ["VarTable"]
+__all__ = ["VarTable", "VarTableType" ]

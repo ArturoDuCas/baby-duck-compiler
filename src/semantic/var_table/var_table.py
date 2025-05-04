@@ -7,7 +7,7 @@ from dataclasses import dataclass
 class Var:
     var_type: str             # e.g. "int", "float"
 
-VarTable = dict[str, Var]     # var_name -> Var
+VarTableType = dict[str, Var]     # var_name -> Var
 
 
 class VarTable:
@@ -16,7 +16,7 @@ class VarTable:
     """
     
     def __init__(self):
-        self._table: VarTable = {}
+        self._table: VarTableType = {}
     
     
     def add_var(self, name: str, var_type: str) -> None:
