@@ -1,5 +1,13 @@
+import pytest
 from src.parser.parser import parser
 from src.lexer.lexer import lexer
+from src.semantic.semantic_state import function_dir
+
+
+@pytest.fixture(autouse=True)
+def reset_semantic():
+    # reset the function directory before each test
+    function_dir.reset()
 
 def parse(code: str):
     return parser.parse(code, lexer=lexer)
