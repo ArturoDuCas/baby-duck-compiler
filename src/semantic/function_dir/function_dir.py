@@ -7,7 +7,7 @@ from dataclasses import dataclass
 # create types
 @dataclass
 class Function:
-    type: str                 # e.g. "int", "float", "void" or "program_name"
+    type: str                 # e.g. "int", "float", "void" or GLOBAL_FUNC_TYPE
     var_table: VarTable
 
 
