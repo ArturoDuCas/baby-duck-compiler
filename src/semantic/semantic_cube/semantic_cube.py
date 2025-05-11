@@ -1,5 +1,5 @@
 from src.semantic.semantic_errors import InvalidOperationError, InvalidOperatorError
-from src.semantic.types import VarType, OperatorType
+from src.types import VarType, OperatorType
 
 # create types
 Key = tuple[VarType, VarType]                           # (left_type, right_type)
