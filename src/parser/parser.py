@@ -1,8 +1,8 @@
 import ply.yacc as yacc
 from src.lexer.lexer import tokens # even though it is not used, it is needed to parse the tokens
 from src.syntax_tree.node import Node
-from src.semantic.semantic_state import function_dir
-from src.semantic.constants import GLOBAL_FUNC_NAME, GLOBAL_FUNC_TYPE, VOID_FUNC_TYPE
+from src.states.semantic_state import function_dir
+from src.semantic.constants import GLOBAL_FUNC_NAME, VOID_FUNC_TYPE
 
 
 # ---------------------------------------------------------------------------

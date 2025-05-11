@@ -1,7 +1,7 @@
 import pytest
 from src.parser.parser import parser
-from src.semantic.semantic_state import function_dir
-from src.semantic.constants import GLOBAL_FUNC_NAME, GLOBAL_FUNC_TYPE
+from src.states.semantic_state import function_dir
+from src.semantic.constants import GLOBAL_FUNC_NAME
 from src.semantic.semantic_errors import (
     DuplicateFunctionError,
     DuplicateVariableError,

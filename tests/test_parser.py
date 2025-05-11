@@ -1,7 +1,7 @@
 import pytest
 from src.parser.parser import parser
 from src.lexer.lexer import lexer
-from src.semantic.semantic_state import function_dir
+from src.states.semantic_state import function_dir
 
 
 @pytest.fixture(autouse=True)
