@@ -25,7 +25,7 @@ class QuadruplesList:
     
     def dump(self) -> str:
         """Dump the quadruples list to a string."""
-        return "\n".join(f"{i}: {quadruple}" for i, quadruple in enumerate(self.quadruples))
+        return "\n" + "\n".join(f"{i}: {quadruple}" for i, quadruple in enumerate(self.quadruples))
 
     def __len__(self) -> int:
         """Get the length of the quadruples list."""

@@ -29,7 +29,6 @@ class IntermediateGenerator:
         operator = self.operators_stack.pop()
         right = self.operands_stack.pop()
         left = self.operands_stack.pop()
-        print("Generating quadruple:", operator, left.addr, right.addr)
         
         result_type = get_resulting_type(operator, left.type, right.type)
         temp_addr = self.memory_manager.new_addr("temp", result_type)
@@ -37,13 +36,21 @@ class IntermediateGenerator:
         # add the cuadruple to the list and the result to the operands stack
         self.quadruples.append(operator, left.addr, right.addr, temp_addr)
         self.operands_stack.push(temp_addr, result_type)
-        print(f"Quadruple list: {self.quadruples}")
 
 
     def push_fake_bottom(self): 
         """Push a fake bottom to the stack."""
         self.operators_stack.push(FAKE_BOTTOM)
+        
     
+    def create_assignment_quadruple(self, current_scope: str, var_name: str):
+        """Create an assignment quadruple."""
+        operator = "="
+        value_to_assign = self.operands_stack.pop()
+        var_to_record = self.function_dir.get_var(current_scope, var_name)
+
+        self.quadruples.append(operator, value_to_assign.addr, None , var_to_record.address)
+
 
     def pop_until_bottom(self):
         """Pop elements from the stack until a bottom is reached."""
