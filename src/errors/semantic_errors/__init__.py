@@ -7,7 +7,7 @@ from .duplicate_function_error import DuplicateFunctionError
 from .undeclared_function_error import UndeclaredFunctionError
 
 __all__ = [
-    "SemanticError", 
+    "SemanticError",
     "InvalidOperationError", 
     "InvalidOperatorError", 
     "DuplicateVariableError",
