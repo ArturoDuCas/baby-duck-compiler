@@ -1,4 +1,4 @@
-from src.semantic.semantic_errors import InvalidOperationError, InvalidOperatorError
+from src.errors.semantic_errors import InvalidOperationError, InvalidOperatorError
 from src.types import VarType, OperatorType
 
 # create types

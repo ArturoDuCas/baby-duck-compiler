@@ -1,7 +1,8 @@
 from src.semantic.var_table import VarTable, Var
-from src.semantic.semantic_errors import DuplicateFunctionError, UndeclaredFunctionError, UndeclaredVariableError
+from src.errors.semantic_errors import DuplicateFunctionError, UndeclaredFunctionError, UndeclaredVariableError
 from src.semantic.constants import GLOBAL_FUNC_NAME, GLOBAL_FUNC_TYPE
 from dataclasses import dataclass
+from src.intermediate_generation.memory_manager import MemoryManager
 
 
 # create types
@@ -19,14 +20,16 @@ class FunctionDir:
     Class representing a function directory.
     """
     
-    def __init__(self):
+    def __init__(self, memory_manager: MemoryManager):
+        self.memory_manager = memory_manager
         self.reset()
-    
+
     def reset(self) -> None:
         """
         Resets the function directory to its initial state.
         """
         self._dir: FunctionDirType = {}
+        
         
         # add the global function
         self._dir[GLOBAL_FUNC_NAME] = Function(GLOBAL_FUNC_TYPE, VarTable())
@@ -46,8 +49,11 @@ class FunctionDir:
         """
         Adds a variable to the function's variable table.
         """
+        segment = "global" if func_name == GLOBAL_FUNC_NAME else "local"
+        addr = self.memory_manager.new_addr(segment, var_type)
+        
         func = self.get_function(func_name)     
-        func.var_table.add_var(var_name, var_type)
+        func.var_table.add_var(var_name, var_type, addr)
 
 
     def get_function(self, name: str) -> Function:
