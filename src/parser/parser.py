@@ -1,7 +1,8 @@
 import ply.yacc as yacc
 from src.lexer.lexer import tokens # even though it is not used, it is needed to parse the tokens
 from src.syntax_tree.node import Node
-from src.states.semantic_state import function_dir
+from src.states.globals import function_dir
+from src.states import intermediate_generator
 from src.semantic.constants import GLOBAL_FUNC_NAME, VOID_FUNC_TYPE
 
 
@@ -155,6 +156,14 @@ def p_statement(p):
 #  Assign
 def p_assign(p):
     """assign : ID ASSIGN expresion SEMICOLON"""
+    
+    #NP: push all the missing operations to the quadruple list 
+    intermediate_generator.pop_until_bottom()
+    
+    # NP: push the assignment to the quadruple list
+    var = p[1]
+    intermediate_generator.create_assignment_quadruple(p.parser.current_function,  var)
+        
     p[0] = Node("Assign", [p[1], p[3]])
 
 
@@ -251,6 +260,9 @@ def p_relational_operators(p):
     """relational_operators : GREATER
                             | LESS
                             | NOT_EQ"""
+    
+    # NP: push the operator to the intermediate generator
+    intermediate_generator.push_operator(p[1])
     p[0] = p[1]
 
 
@@ -273,6 +285,9 @@ def p_exp_helper(p):
 def p_plus_or_minus(p):
     """plus_or_minus : PLUS
                     | MINUS"""
+
+    # NP: push the operator to the intermediate generator
+    intermediate_generator.push_operator(p[1])
     p[0] = p[1]
 
 
@@ -293,13 +308,25 @@ def p_termino_helper(p):
 def p_mult_or_div(p):
     """mult_or_div : MULT
                     | DIV"""
+    
+    # NP: push the operator to the intermediate generator
+    intermediate_generator.push_operator(p[1])
     p[0] = p[1]
 
 
 # ---------------------------------------------------------------------------
 #  Factors
+def p_lp_fake(p):
+    "lp : L_PARENT"
+    intermediate_generator.push_fake_bottom()
+    
+
+def p_rp_fake(p):
+    "rp : R_PARENT"
+    intermediate_generator.pop_until_fake_bottom()    
+
 def p_factor(p):
-    """factor : L_PARENT expresion R_PARENT
+    """factor : lp expresion rp
               | factor_sign factor_value"""
     if len(p) == 4: ## first production
         p[0] = p[2]
@@ -326,13 +353,18 @@ def p_factor_sign(p):
 
 def p_factor_value(p):
     """factor_value : ID
-                    | cte"""
-    p[0] = p[1]
-
-
-def p_cte(p):
-    """cte : CTE_INT
-            | CTE_FLOAT"""
+                    | CTE_INT
+                    | CTE_FLOAT"""
+    
+    
+    token_type = p.slice[1].type
+    
+    # NP: push the operand to the intermediate generator
+    intermediate_generator.push_operand(lexeme=p[1],
+                                        token_type=token_type,
+                                        current_scope=p.parser.current_function
+                                        )
+    
     p[0] = p[1]
 
 
