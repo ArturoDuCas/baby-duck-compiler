@@ -1,17 +1,19 @@
 import pytest
 from src.semantic.function_dir import FunctionDir
-from src.semantic.semantic_errors import (
+from src.errors.semantic_errors import (
     DuplicateFunctionError,
     UndeclaredFunctionError,
     DuplicateVariableError,
     UndeclaredVariableError,
 )
-from src.semantic.constants import GLOBAL_FUNC_NAME, GLOBAL_FUNC_TYPE
+from src.semantic.constants import GLOBAL_FUNC_NAME
+from src.intermediate_generation.memory_manager import MemoryManager
 
 
 @pytest.fixture
 def function_dir():
-    fd = FunctionDir()
+    mm = MemoryManager()
+    fd = FunctionDir(mm)
     fd.add_function("main", "void")
     return fd
 

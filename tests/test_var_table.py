@@ -1,5 +1,5 @@
 import pytest
-from src.semantic.semantic_errors import DuplicateVariableError
+from src.errors.semantic_errors import DuplicateVariableError
 from src.semantic.var_table import VarTable
 
 @pytest.fixture
