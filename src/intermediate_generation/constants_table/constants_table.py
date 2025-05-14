@@ -19,7 +19,7 @@ class ConstantTable:
         self._by_addr_map:  ByAddrMapType = {}
         self.memory_manager = memory_manager
 
-    def get_or_add(self, value, const_type) -> ConstantEntry:
+    def get_or_add(self, value: ValueType, const_type: VarType) -> ConstantEntry:
         """Get the address of a constant or add it to the table if it doesn't exist."""
         key = (value, const_type)
         

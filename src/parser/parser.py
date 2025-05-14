@@ -224,6 +224,10 @@ def p_print(p):
 
 def p_print_options(p):
     """print_options : print_option more_expressions"""
+    
+    # NP: push a quadruple for the print
+    intermediate_generator.create_print_quadruple()
+    
     p[0] = [p[1]] + p[2]
 
 
@@ -239,6 +243,14 @@ def p_more_expressions(p):
 def p_print_option(p):
     """print_option : expresion
                     | CTE_STRING"""
+                    
+    # NP: if it is a string, push the operand to the stack
+    if p.slice[1].type == 'CTE_STRING':
+        intermediate_generator.push_operand(lexeme=p[1],
+                                            token_type='CTE_STRING',
+                                            current_scope=p.parser.current_function
+                                            )                
+    
     p[0] = p[1]
 
 

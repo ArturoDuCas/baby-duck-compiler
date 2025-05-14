@@ -1,31 +1,40 @@
-
-from typing import Literal
+from typing import Literal, Dict
 from src.types import VarType
 
 SegmentType = Literal["global", "local", "temp", "const"]
-Counters = dict[SegmentType, dict[VarType, int]]
+CountersType = Dict[SegmentType, Dict[VarType, int]] # segment -> var_type -> count
 
-SEGMENT_BASE: dict[SegmentType, int] = {
+SEGMENT_BASE: Dict[SegmentType, int] = {
     "global": 10000,
     "local":  20000,
     "temp":   30000,
     "const":  40000,
 }
 
+TYPE_OFFSET = {
+    "int":    0,
+    "float":  1000,
+    "string": 2000,
+}
+
+BLOCK_SIZE = 1000       
+
 class MemoryManager:
-    """Class to manage memory segments and addresses."""
-    
     def __init__(self):
-        # counters for each segment
-        self._counters: Counters = {
-            seg: {"int": 0, "float": 0, "string": 0}
+        
+        self._counters: CountersType = {
+            seg: {t: 0 for t in TYPE_OFFSET}
             for seg in SEGMENT_BASE
         }
-        
 
     def new_addr(self, segment: SegmentType, var_type: VarType) -> int:
-        """Generate a new address for a variable in the given segment."""
-        
+        """Returns a new address for the given segment and variable type."""
         idx = self._counters[segment][var_type]
         self._counters[segment][var_type] += 1
-        return SEGMENT_BASE[segment] + idx
+
+        if idx >= BLOCK_SIZE:
+            raise RuntimeError(f"Out of memory for {var_type} in segment {segment}")
+
+        base   = SEGMENT_BASE[segment]
+        offset = TYPE_OFFSET[var_type]
+        return base + offset + idx

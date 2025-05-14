@@ -50,6 +50,14 @@ class IntermediateGenerator:
         var_to_record = self.function_dir.get_var(current_scope, var_name)
 
         self.quadruples.append(operator, value_to_assign.addr, None , var_to_record.address)
+        
+    
+    def create_print_quadruple(self):
+        """Create a print quadruple."""
+        operator = "PRINT"
+        value_to_print = self.operands_stack.pop()
+        
+        self.quadruples.append(operator, value_to_print.addr, None, None)
 
 
     def pop_until_bottom(self):
@@ -79,6 +87,10 @@ class IntermediateGenerator:
             addr = self.constants_table.get_or_add(float(lexeme), 'float')
             self.operands_stack.push(addr, 'float')
 
+        elif token_type == "CTE_STRING":
+            addr = self.constants_table.get_or_add(lexeme, 'string')
+            self.operands_stack.push(addr, 'string')
+
         else:
             raise CompilerBug("Unsupported type encountered while generating intermediate code")
 
@@ -97,6 +109,10 @@ class IntermediateGenerator:
     def get_quadruples(self):
         """Get the list of quadruples."""
         return self.quadruples
+
+    def get_function_dir(self):
+        """Get the function directory."""
+        return self.function_dir
     
     def reset(self):
         """Reset the generator state."""
