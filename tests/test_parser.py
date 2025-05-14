@@ -1,29 +1,17 @@
 import pytest
-from src.parser.parser import parser
-from src.lexer.lexer import lexer
-from src.states import function_dir
 
-
-@pytest.fixture(autouse=True)
-def reset_semantic():
-    # reset the function directory before each test
-    function_dir.reset()
-
-def parse(code: str):
-    return parser.parse(code, lexer=lexer)
-
-def test_program_only_main():
+def test_program_only_main(compiler):
+    parser, lexer, _ = compiler
     code = """
     program p0;
-
-    main {}
-
+    main { }
     end
     """
-    assert parse(code)
+    assert parser.parse(code, lexer=lexer)
 
 
-def test_vars_and_arithmetic():
+def test_vars_and_arithmetic(compiler):
+    parser, lexer, _ = compiler
     code = """
     program arithmetic_demo;
     var a, b, c: int;
@@ -36,10 +24,11 @@ def test_vars_and_arithmetic():
     }
     end
     """
-    assert parse(code)
+    assert parser.parse(code, lexer=lexer)
 
 
-def test_function_definition_and_call():
+def test_function_definition_and_call(compiler):
+    parser, lexer, _ = compiler
     code = """
     program with_funcs;
 
@@ -56,10 +45,11 @@ def test_function_definition_and_call():
     }
     end
     """
-    assert parse(code)
+    assert parser.parse(code, lexer=lexer)
 
 
-def test_condition_and_loop():
+def test_condition_and_loop(compiler):
+    parser, lexer, _ = compiler
     code = """
     program control_flow;
     var i, limit: int;
@@ -79,10 +69,11 @@ def test_condition_and_loop():
     }
     end
     """
-    assert parse(code)
+    assert parser.parse(code, lexer=lexer)
 
 
-def test_print_strings_and_relops():
+def test_print_strings_and_relops(compiler):
+    parser, lexer, _ = compiler
     code = """
     program printer;
     var x: int;
@@ -101,4 +92,4 @@ def test_print_strings_and_relops():
     }
     end
     """
-    assert parse(code)
+    assert parser.parse(code, lexer=lexer)

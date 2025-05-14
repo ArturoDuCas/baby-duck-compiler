@@ -1,21 +1,17 @@
 import pytest
-from src.parser.parser import parser
-from src.states.globals import function_dir
 from src.semantic.constants import GLOBAL_FUNC_NAME
 from src.errors.semantic_errors import (
     DuplicateFunctionError,
     DuplicateVariableError,
 )
 
-# reset the function directory before each test
-@pytest.fixture(autouse=True)
-def reset_semantic():
-    function_dir.reset()
+# ---------------------------------------------------------------------------
+# 1) Caso válido: variables globales y locales registradas
+# ---------------------------------------------------------------------------
+def test_valid_program_registers_global_and_function_vars(compiler):
+    parser, lexer, gen = compiler
+    fdir = parser.function_dir
 
-# ——————————————————————————————————————————————————————————————
-# Valid Case: Program with global and function variables
-# ——————————————————————————————————————————————————————————————
-def test_valid_program_registers_global_and_function_vars():
     source = """
     program demo;
         var a, b: int;
@@ -24,9 +20,7 @@ def test_valid_program_registers_global_and_function_vars():
         void foo() [
             var r: int;
             {
-                
             }
-            
         ];
 
         main {
@@ -36,41 +30,43 @@ def test_valid_program_registers_global_and_function_vars():
         }
     end
     """
-    ast = parser.parse(source)
+    parser.parse(source, lexer=lexer)
 
-    # registered functions
-    keys = set(function_dir._dir.keys())
-    assert keys == {GLOBAL_FUNC_NAME, 'foo'}
+    # — funciones registradas —
+    assert set(fdir._dir.keys()) == {GLOBAL_FUNC_NAME, "foo"}
 
-    # global variables
-    gv = function_dir._dir[GLOBAL_FUNC_NAME].var_table
-    assert gv.get_var('a').var_type == 'int'
-    assert gv.get_var('b').var_type == 'int'
-    assert gv.get_var('x').var_type == 'float'
+    # — variables globales —
+    gvars = fdir._dir[GLOBAL_FUNC_NAME].var_table
+    assert gvars.get_var("a").var_type == "int"
+    assert gvars.get_var("b").var_type == "int"
+    assert gvars.get_var("x").var_type == "float"
 
-    # local variables in 'foo'
-    lv = function_dir._dir['foo'].var_table
-    assert lv.get_var('r').var_type == 'int'
+    # — variables locales en foo —
+    lvars = fdir._dir["foo"].var_table
+    assert lvars.get_var("r").var_type == "int"
 
 
-# ——————————————————————————————————————————————————————————————
-# Invalid cases: Duplicate function declaration
-# ——————————————————————————————————————————————————————————————
-def test_duplicate_function_declaration_raises():
+# ---------------------------------------------------------------------------
+# 2) Error: función duplicada
+# ---------------------------------------------------------------------------
+def test_duplicate_function_declaration_raises(compiler):
+    parser, lexer, _ = compiler
     source = """
     program demo;
-        void foo() [{}] ;
-        void foo() [{}] ;
+        void foo() [{}];
+        void foo() [{}];
         main { }
     end
     """
     with pytest.raises(DuplicateFunctionError):
-        parser.parse(source)
+        parser.parse(source, lexer=lexer)
 
-# ——————————————————————————————————————————————————————————————
-# Invalid Case: Duplicate variable declaration in global scope
-# ——————————————————————————————————————————————————————————————
-def test_duplicate_global_variable_raises():
+
+# ---------------------------------------------------------------------------
+# 3) Error: variable global duplicada
+# ---------------------------------------------------------------------------
+def test_duplicate_global_variable_raises(compiler):
+    parser, lexer, _ = compiler
     source = """
     program demo;
         var a: int;
@@ -79,24 +75,24 @@ def test_duplicate_global_variable_raises():
     end
     """
     with pytest.raises(DuplicateVariableError):
-        parser.parse(source)
+        parser.parse(source, lexer=lexer)
 
-# ——————————————————————————————————————————————————————————————
-# Invalid Case: Duplicate variable declaration in function scope
-# ——————————————————————————————————————————————————————————————
-def test_duplicate_local_variable_raises():
+
+# ---------------------------------------------------------------------------
+# 4) Error: variable local duplicada en una función
+# ---------------------------------------------------------------------------
+def test_duplicate_local_variable_raises(compiler):
+    parser, lexer, _ = compiler
     source = """
     program demo;
         void foo() [
             var x: int;
             x, y: float;
             {
-                
             }
         ];
         main { }
     end
     """
     with pytest.raises(DuplicateVariableError):
-        parser.parse(source)
-
+        parser.parse(source, lexer=lexer)
