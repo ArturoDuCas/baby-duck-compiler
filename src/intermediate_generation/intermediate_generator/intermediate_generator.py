@@ -113,6 +113,10 @@ class IntermediateGenerator:
     def get_function_dir(self):
         """Get the function directory."""
         return self.function_dir
+
+    def get_constants_table(self):
+        """Get the constants table."""
+        return self.constants_table
     
     def reset(self):
         """Reset the generator state."""

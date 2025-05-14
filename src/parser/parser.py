@@ -114,7 +114,6 @@ def p_param(p):
     
     # NP: add the parameter to the respective var table
     scope = p.parser.current_function
-    print(f"Adding parameter {p[1]} of type {p[3]} to function {scope}")
     p.parser.function_dir.add_var_to_function(scope, p[1], p[3])
 
 
