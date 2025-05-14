@@ -39,3 +39,18 @@ class ConstantTable:
         """Lookup a constant by its address."""
         
         return self._by_addr_map.get(addr)
+
+    def dump(self) -> str:
+        """Returns the table line by line ordered by address."""
+        if not self._by_addr_map:
+            return "<empty>"
+
+        lines: list[str] = ["addr │ type   │ value",
+                            "─────┼────────┼────────────────────"]
+        for addr in sorted(self._by_addr_map):
+            entry = self._by_addr_map[addr]
+            lines.append(f"{addr:>5} │ {entry.const_type:<6} │ {entry.value!r}")
+        return "\n".join(lines)
+
+    def __str__(self) -> str:
+        return self.dump()
