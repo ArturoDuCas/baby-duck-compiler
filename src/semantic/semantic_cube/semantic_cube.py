@@ -1,9 +1,10 @@
-from src.semantic.semantic_errors import InvalidOperationError, InvalidOperatorError
+from src.errors.semantic_errors import InvalidOperationError, InvalidOperatorError
+from src.types import VarType, OperatorType
 
 # create types
-Key = tuple[str, str]                           # (left_type, right_type)
-OperationResultMap = dict[Key, str]             # (left_type, right_type) -> result_type
-SemanticCube = dict[str, OperationResultMap]    # type -> (left_type, right_type) -> result_type
+Key = tuple[VarType, VarType]                           # (left_type, right_type)
+OperationResultMap = dict[Key, VarType]             # (left_type, right_type) -> result_type
+SemanticCube = dict[OperatorType, OperationResultMap]    # type -> (left_type, right_type) -> result_type
 
 
 semantic_cube: SemanticCube = {

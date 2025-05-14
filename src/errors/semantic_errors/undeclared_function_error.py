@@ -1,4 +1,4 @@
-from src.semantic.semantic_errors import SemanticError
+from src.errors.semantic_errors import SemanticError
 
 
 class UndeclaredFunctionError(SemanticError):

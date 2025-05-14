@@ -1,7 +1,6 @@
 import pytest
-
 from src.semantic.semantic_cube.semantic_cube import get_resulting_type
-from src.semantic.semantic_errors import InvalidOperationError, InvalidOperatorError
+from src.errors.semantic_errors import InvalidOperationError, InvalidOperatorError
 
 # valid arithmetic operations
 @pytest.mark.parametrize("op,left,right,expected", [

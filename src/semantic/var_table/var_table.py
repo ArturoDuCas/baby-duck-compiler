@@ -1,11 +1,13 @@
-from src.semantic.semantic_errors import DuplicateVariableError, UndeclaredVariableError
+from src.errors.semantic_errors import DuplicateVariableError, UndeclaredVariableError
 from dataclasses import dataclass
+from src.types import AddressType
 
 
 # create types
 @dataclass
 class Var:
     var_type: str             # e.g. "int", "float"
+    address: AddressType      # address of the variable in memory
 
 VarTableType = dict[str, Var]     # var_name -> Var
 
@@ -19,14 +21,14 @@ class VarTable:
         self._table: VarTableType = {}
     
     
-    def add_var(self, name: str, var_type: str) -> None:
+    def add_var(self, name: str, var_type: str, addr: AddressType) -> None:
         """
         Adds a variable to the table.
         """
         if name in self._table:
             raise DuplicateVariableError(name)
         
-        self._table[name] = Var(var_type)
+        self._table[name] = Var(var_type, addr)
         
     def get_var(self, name: str) -> Var | None:
         """

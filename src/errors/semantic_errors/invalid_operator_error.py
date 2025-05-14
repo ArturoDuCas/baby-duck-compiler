@@ -1,4 +1,4 @@
-from src.semantic.semantic_errors.semantic_error import SemanticError
+from src.errors.semantic_errors import SemanticError
 
 class InvalidOperatorError(SemanticError):
     def __init__(self, operator: str, lineno: int | None = None):
