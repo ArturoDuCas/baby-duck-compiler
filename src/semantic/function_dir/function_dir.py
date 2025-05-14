@@ -3,6 +3,7 @@ from src.errors.semantic_errors import DuplicateFunctionError, UndeclaredFunctio
 from src.semantic.constants import GLOBAL_FUNC_NAME, GLOBAL_FUNC_TYPE
 from dataclasses import dataclass
 from src.intermediate_generation.memory_manager import MemoryManager
+from src.types import VarType
 
 
 # create types
@@ -45,7 +46,7 @@ class FunctionDir:
         self._dir[name] = Function(func_type, VarTable())
     
     
-    def add_var_to_function(self, func_name: str, var_name: str, var_type: str) -> None:
+    def add_var_to_function(self, func_name: str, var_name: str, var_type: VarType) -> None:
         """
         Adds a variable to the function's variable table.
         """

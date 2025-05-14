@@ -1,8 +1,6 @@
 import ply.yacc as yacc
 from src.lexer.lexer import tokens # even though it is not used, it is needed to parse the tokens
 from src.syntax_tree.node import Node
-from src.states.globals import function_dir
-from src.states import intermediate_generator
 from src.semantic.constants import GLOBAL_FUNC_NAME, VOID_FUNC_TYPE
 
 
@@ -37,7 +35,7 @@ def p_vars_declaration(p):
     scope = p.parser.current_function
     for id in ids:
         # NP: add the variable to the function directory
-        function_dir.add_var_to_function(scope, id, var_type)
+        p.parser.function_dir.add_var_to_function(scope, id, var_type)
     
     p[0] = Node("VarsDecl", [ids, p[4]])
 
@@ -64,7 +62,7 @@ def p_type(p):
 
     # NP: set the current type
     p.parser.current_type = p[1]  
-    p[0] = Node("Type", [p[1]])
+    p[0] = p[1]
 
 # ---------------------------------------------------------------------------
 #  Functions
@@ -76,14 +74,21 @@ def p_funcs_or_empty(p):
     else:
         p[0] = []
 
-def p_func_header(p):
-    """func_header : VOID ID L_PARENT param_list R_PARENT L_BRACK"""
 
-    func_name = p[2]
+def p_push_scope(p):
+    "push_scope :"
+    func_name = p[-1] 
     
     # NP: add the function to the function directory
-    function_dir.add_function(func_name, VOID_FUNC_TYPE)
-    p.parser.current_function = func_name
+    p.parser.function_dir.add_function(func_name, VOID_FUNC_TYPE)
+    
+    # NP: update the current function
+    p.parser.current_function = func_name   
+
+
+def p_func_header(p):
+    """func_header : VOID ID push_scope L_PARENT param_list R_PARENT L_BRACK"""
+
     p[0] = None
 
 
@@ -106,6 +111,13 @@ def p_funcs(p):
 
 def p_param(p):
     """param : ID COLON type"""
+    
+    # NP: add the parameter to the respective var table
+    scope = p.parser.current_function
+    print(f"Adding parameter {p[1]} of type {p[3]} to function {scope}")
+    p.parser.function_dir.add_var_to_function(scope, p[1], p[3])
+
+
     p[0] = Node("Param", [p[1], p[3]])
 
 
@@ -158,11 +170,11 @@ def p_assign(p):
     """assign : ID ASSIGN expresion SEMICOLON"""
     
     #NP: push all the missing operations to the quadruple list 
-    intermediate_generator.pop_until_bottom()
+    p.parser.intermediate_generator.pop_until_bottom()
     
     # NP: push the assignment to the quadruple list
     var = p[1]
-    intermediate_generator.create_assignment_quadruple(p.parser.current_function,  var)
+    p.parser.intermediate_generator.create_assignment_quadruple(p.parser.current_function,  var)
         
     p[0] = Node("Assign", [p[1], p[3]])
 
@@ -226,7 +238,7 @@ def p_print_options(p):
     """print_options : print_option more_expressions"""
     
     # NP: push a quadruple for the print
-    intermediate_generator.create_print_quadruple()
+    p.parser.intermediate_generator.create_print_quadruple()
     
     p[0] = [p[1]] + p[2]
 
@@ -246,7 +258,7 @@ def p_print_option(p):
                     
     # NP: if it is a string, push the operand to the stack
     if p.slice[1].type == 'CTE_STRING':
-        intermediate_generator.push_operand(lexeme=p[1],
+        p.parser.intermediate_generator.push_operand(lexeme=p[1],
                                             token_type='CTE_STRING',
                                             current_scope=p.parser.current_function
                                             )                
@@ -274,7 +286,7 @@ def p_relational_operators(p):
                             | NOT_EQ"""
     
     # NP: push the operator to the intermediate generator
-    intermediate_generator.push_operator(p[1])
+    p.parser.intermediate_generator.push_operator(p[1])
     p[0] = p[1]
 
 
@@ -299,7 +311,7 @@ def p_plus_or_minus(p):
                     | MINUS"""
 
     # NP: push the operator to the intermediate generator
-    intermediate_generator.push_operator(p[1])
+    p.parser.intermediate_generator.push_operator(p[1])
     p[0] = p[1]
 
 
@@ -322,7 +334,7 @@ def p_mult_or_div(p):
                     | DIV"""
     
     # NP: push the operator to the intermediate generator
-    intermediate_generator.push_operator(p[1])
+    p.parser.intermediate_generator.push_operator(p[1])
     p[0] = p[1]
 
 
@@ -330,12 +342,12 @@ def p_mult_or_div(p):
 #  Factors
 def p_lp_fake(p):
     "lp : L_PARENT"
-    intermediate_generator.push_fake_bottom()
+    p.parser.intermediate_generator.push_fake_bottom()
     
 
 def p_rp_fake(p):
     "rp : R_PARENT"
-    intermediate_generator.pop_until_fake_bottom()    
+    p.parser.intermediate_generator.pop_until_fake_bottom()    
 
 def p_factor(p):
     """factor : lp expresion rp
@@ -372,7 +384,7 @@ def p_factor_value(p):
     token_type = p.slice[1].type
     
     # NP: push the operand to the intermediate generator
-    intermediate_generator.push_operand(lexeme=p[1],
+    p.parser.intermediate_generator.push_operand(lexeme=p[1],
                                         token_type=token_type,
                                         current_scope=p.parser.current_function
                                         )
