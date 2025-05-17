@@ -43,7 +43,7 @@ class IntermediateGenerator:
         """Mark the start of a loop."""
         self.jump_stack.push(self.quadruples.next_quad)
     
-    def generate_gotof_for_loop(self) -> None: 
+    def generate_gotof_for_statement(self) -> None: 
         """Evaluate the result of the last quadruple and generate a GOTOF."""
         
         # generate the missing quadruples until the bottom of the stack
@@ -54,10 +54,31 @@ class IntermediateGenerator:
         
         # add the GOTOF quadruple, let the destination empty for now
         self.quadruples.append("GOTOF", last_quad.result, None, None)
-
-        # push the index of the last quadruple to the jump stack
         self.jump_stack.push(self.quadruples.get_actual_index())
+
+    def assign_goto_destination(self) -> None:
+        """Assign the destination of the last GOTOF quadruple."""
+        # retrieve the index of gotof quadruple
+        gotof_quad_idx = self.jump_stack.pop()
+        
+        # patch the GOTOF to jump here (exit point of the statement)
+        self.quadruples[gotof_quad_idx].result = self.quadruples.next_quad
     
+    
+    def handle_else(self) -> None:
+        """Handle the else statement."""
+        
+        # retrieve the index of gotof quadruple
+        gotof_quad_idx = self.jump_stack.pop()
+        
+        # add a GOTO to skip the else block (to be patched later)
+        self.quadruples.append("GOTO", None, None, None)
+        self.jump_stack.push(self.quadruples.get_actual_index())
+        
+        # patch the GOTOF to jump here (exit point of the statement)
+        self.quadruples[gotof_quad_idx].result = self.quadruples.next_quad
+        
+        
     def close_loop(self) -> None:
         """Close the current loop."""
         # retrieve the GOTOF index (to be patched with the instruction after the loop)

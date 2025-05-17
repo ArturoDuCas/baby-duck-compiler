@@ -39,7 +39,7 @@ def test_while_generates_expected_quads(compiler):
 
 
 # ────────────────────────────────────────────────────────────────────
-# 2.  While with empty body (only jumps)
+# While with empty body (only jumps)
 # ────────────────────────────────────────────────────────────────────
 def test_while_empty_body(compiler):
     """
@@ -61,3 +61,80 @@ def test_while_empty_body(compiler):
     assert quads[-1].result == 0                  
     assert quads[1].result == len(quads)
 
+
+# ────────────────────────────────────────────────────────────────────
+# If without else
+# ────────────────────────────────────────────────────────────────────
+def test_if_without_else_generates_expected_quads(compiler):
+    """
+    if (a < b) { a = a + 1; };
+    We expect the following quadruples:
+        0: <       a  b   t0
+        1: GOTOF   t0 -   4
+        2: +       a  1   t1
+        3: =       t1 -   a
+    """
+    parser, lexer, gen = compiler
+    code = """
+    program i1;
+    var a, b: int;
+    main {
+        if(a < b) {
+            a = a + 1;
+        };
+    }
+    end
+    """
+    parser.parse(code, lexer=lexer)
+    quads = gen.get_quadruples().quadruples
+
+    ops = [q.operator for q in quads]
+    assert ops == ['<', 'GOTOF', '+', '=']
+
+    # GOTOF that skips the body of the if
+    assert quads[1].result == len(quads)
+
+
+# ────────────────────────────────────────────────────────────────────
+# 2.  IF with ELSE
+# ────────────────────────────────────────────────────────────────────
+def test_if_with_else_generates_expected_quads(compiler):
+    """
+    if (a < b) { a = a + 1; } else { a = a + 2; };
+    We expect the following quadruples:
+        0: <       a  b   t0
+        1: GOTOF   t0 -   5
+        2: +       a  1   t1
+        3: =       t1 -   a
+        4: GOTO    -  -   7
+        5: +       a  2   t2
+        6: =       t2 -   a
+    """
+    parser, lexer, gen = compiler
+    code = """
+    program i2;
+    var a, b: int;
+    main {
+        if(a < b) {
+            a = a + 1;
+        } else {
+            a = a + 2;
+        };
+    }
+    end
+    """
+    parser.parse(code, lexer=lexer)
+    quads = gen.get_quadruples().quadruples
+
+    ops = [q.operator for q in quads]
+    assert ops == ['<', 'GOTOF', '+', '=', 'GOTO', '+', '=']
+
+    # util indexes to check the jumps
+    gotof_idx = 1
+    goto_idx  = 4
+
+    # GOTOF should skip the body of the IF
+    assert quads[gotof_idx].result == 5
+
+    # GOTO should skip the ELSE body
+    assert quads[goto_idx].result == len(quads)
