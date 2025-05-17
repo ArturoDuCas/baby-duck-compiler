@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 from src.types import OperatorType
+from src.errors.internal_compiler_error import CompilerBug
 
 @dataclass
 class Quadruple:
@@ -23,6 +24,16 @@ class QuadruplesList:
         self.quadruples.append(quadruple)
         self.next_quad += 1
     
+    def get_last_quadruple(self) -> Quadruple:
+        """Get the last quadruple in the list."""
+        if not self.quadruples:
+            raise CompilerBug("No quadruples available.")
+        return self.quadruples[-1]
+
+    def get_actual_index(self) -> int:
+        """Get the current quadruple index."""
+        return self.next_quad - 1
+    
     def dump(self) -> str:
         """Dump the quadruples list to a string."""
         return "\n" + "\n".join(f"{i}: {quadruple}" for i, quadruple in enumerate(self.quadruples))
@@ -37,7 +48,6 @@ class QuadruplesList:
     
     def __getitem__(self, index: int) -> Quadruple:
         """Get a quadruple by index."""
-        print(self.quadruples)
         return self.quadruples[index]
     
     def __str__(self) -> str:

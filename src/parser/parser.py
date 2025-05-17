@@ -196,8 +196,29 @@ def p_else_part(p):
 
 # ---------------------------------------------------------------------------
 #  Cycle
+
+def p_while_start(p): 
+    """while_start :"""
+    # NP: push the start of the loop to the jump stack
+    p.parser.intermediate_generator.mark_loop_start()
+
+
+def p_while_gotof(p):
+    """while_gotof :"""
+    
+    # NP: push the GOTOF to the quadruple list
+    p.parser.intermediate_generator.generate_gotof_for_loop()
+
+
+def p_while_end(p):
+    """while_end :"""
+    
+    # NP: close the loop
+    p.parser.intermediate_generator.close_loop()
+
+
 def p_cycle(p):
-    """cycle : WHILE L_PARENT expresion R_PARENT DO body SEMICOLON"""
+    """cycle : WHILE while_start L_PARENT expresion R_PARENT while_gotof DO body while_end SEMICOLON"""
     p[0] = Node("While", [p[3], p[6]])
 
 

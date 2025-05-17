@@ -4,6 +4,7 @@ from src.intermediate_generation.quadruples_list import QuadruplesList
 from src.intermediate_generation.constants_table import ConstantTable
 from src.intermediate_generation.hierarchy import has_greater_or_equal_precedence
 from src.intermediate_generation.memory_manager import MemoryManager
+from src.intermediate_generation.jump_stack import JumpStack
 from src.semantic.semantic_cube import get_resulting_type
 from src.types import ValueType
 from typing import Literal
@@ -23,6 +24,7 @@ class IntermediateGenerator:
         self.operators_stack = OperatorsStack()
         self.quadruples = QuadruplesList()
         self.constants_table = ConstantTable(memory_manager)
+        self.jump_stack = JumpStack()
     
     
     def generate_quadruple(self):
@@ -37,6 +39,38 @@ class IntermediateGenerator:
         self.quadruples.append(operator, left.addr, right.addr, temp_addr)
         self.operands_stack.push(temp_addr, result_type)
 
+    def mark_loop_start(self) -> None:
+        """Mark the start of a loop."""
+        self.jump_stack.push(self.quadruples.next_quad)
+    
+    def generate_gotof_for_loop(self) -> None: 
+        """Evaluate the result of the last quadruple and generate a GOTOF."""
+        
+        # generate the missing quadruples until the bottom of the stack
+        self.pop_until_bottom()
+        
+        # get the last quadruple generated
+        last_quad = self.quadruples.get_last_quadruple()
+        
+        # add the GOTOF quadruple, let the destination empty for now
+        self.quadruples.append("GOTOF", last_quad.result, None, None)
+
+        # push the index of the last quadruple to the jump stack
+        self.jump_stack.push(self.quadruples.get_actual_index())
+    
+    def close_loop(self) -> None:
+        """Close the current loop."""
+        # retrieve the GOTOF index (to be patched with the instruction after the loop)
+        gotof_quad_idx = self.jump_stack.pop()
+        
+        # retrieve the index where the loop condition starts (jump-back target)
+        loop_start_idx = self.jump_stack.pop()
+        
+        # append an unconditional GOTO to re-evaluate the loop condition
+        self.quadruples.append("GOTO", None, None, loop_start_idx)
+
+        # patch the GOTOF to jump here (exit point of the loop)
+        self.quadruples[gotof_quad_idx].result = self.quadruples.next_quad
 
     def push_fake_bottom(self): 
         """Push a fake bottom to the stack."""
