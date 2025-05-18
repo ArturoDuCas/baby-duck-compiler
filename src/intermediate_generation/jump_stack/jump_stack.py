@@ -7,7 +7,7 @@ class JumpStack:
     """
 
     def __init__(self) -> None:
-            self._stack: list[int] = []
+        self._stack: list[int] = []
 
     def push(self, value: int) -> None:
         """Add a new index to the stack."""

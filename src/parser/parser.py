@@ -231,7 +231,7 @@ def p_while_end(p):
 
 def p_cycle(p):
     """cycle : WHILE while_start L_PARENT expresion R_PARENT generate_gotof DO body while_end SEMICOLON"""
-    p[0] = Node("While", [p[3], p[6]])
+    p[0] = Node("While", [p[4], p[7], p[8]])
 
 
 # ---------------------------------------------------------------------------
