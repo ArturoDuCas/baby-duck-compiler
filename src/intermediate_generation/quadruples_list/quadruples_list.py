@@ -9,6 +9,13 @@ class Quadruple:
     left: Optional[str]
     right: Optional[str]
     result: Optional[str]
+    
+    def __repr__(self) -> str:
+        """Return a compact, column-aligned representation."""
+        l = self.left   if self.left   is not None else "-"
+        r = self.right  if self.right  is not None else "-"
+        res = self.result if self.result is not None else "-"
+        return f"{self.operator:<6} {l:<6} {r:<6} {res}"
 
 
 class QuadruplesList: 
@@ -35,8 +42,9 @@ class QuadruplesList:
         return self.next_quad - 1
     
     def dump(self) -> str:
-        """Dump the quadruples list to a string."""
-        return "\n" + "\n".join(f"{i}: {quadruple}" for i, quadruple in enumerate(self.quadruples))
+        return "\n" + "\n".join(
+            f"{i:>3}: {quad}" for i, quad in enumerate(self.quadruples)
+        )
 
     def __len__(self) -> int:
         """Get the length of the quadruples list."""

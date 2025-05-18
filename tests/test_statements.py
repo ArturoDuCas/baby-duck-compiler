@@ -96,7 +96,7 @@ def test_if_without_else_generates_expected_quads(compiler):
 
 
 # ────────────────────────────────────────────────────────────────────
-# 2.  IF with ELSE
+# IF with ELSE
 # ────────────────────────────────────────────────────────────────────
 def test_if_with_else_generates_expected_quads(compiler):
     """
