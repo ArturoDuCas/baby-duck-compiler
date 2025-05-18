@@ -180,25 +180,58 @@ def p_assign(p):
 
 # ---------------------------------------------------------------------------
 #  Condition
+
+def p_generate_gotof(p):
+    """generate_gotof :"""
+    
+    # NP: push the GOTOF to the quadruple list
+    p.parser.intermediate_generator.generate_gotof_for_statement()
+
+def p_update_goto(p):
+    """update_goto :"""
+    
+    # NP: patch the GOTOF to jump here
+    p.parser.intermediate_generator.assign_goto_destination()
+
 def p_condition(p):
-    """condition : IF L_PARENT expresion R_PARENT body else_part SEMICOLON"""
-    p[0] = Node("If", [p[3], p[5], p[6]])
+    """condition : IF L_PARENT expresion R_PARENT generate_gotof body else_part update_goto SEMICOLON"""
+    p[0] = Node("If", [p[3], p[6], p[7]])
+
+def p_else_handler(p):
+    """else_handler :"""
+    
+    # NP: skip the else block and patch the GOTOF
+    p.parser.intermediate_generator.handle_else()
+
 
 
 def p_else_part(p):
-    """else_part : ELSE body
+    """else_part : else_handler ELSE body
                   | empty"""    
-    if len(p) == 3:  # first production
-        p[0] = p[2]
+    if len(p) == 4:  # first production
+        p[0] = p[3]
     else:
         p[0] = None
 
 
 # ---------------------------------------------------------------------------
 #  Cycle
+
+def p_while_start(p): 
+    """while_start :"""
+    # NP: push the start of the loop to the jump stack
+    p.parser.intermediate_generator.mark_loop_start()
+
+def p_while_end(p):
+    """while_end :"""
+    
+    # NP: close the loop
+    p.parser.intermediate_generator.close_loop()
+
+
 def p_cycle(p):
-    """cycle : WHILE L_PARENT expresion R_PARENT DO body SEMICOLON"""
-    p[0] = Node("While", [p[3], p[6]])
+    """cycle : WHILE while_start L_PARENT expresion R_PARENT generate_gotof DO body while_end SEMICOLON"""
+    p[0] = Node("While", [p[4], p[7], p[8]])
 
 
 # ---------------------------------------------------------------------------
