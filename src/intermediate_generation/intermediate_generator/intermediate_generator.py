@@ -115,9 +115,11 @@ class IntermediateGenerator:
     def pop_until_bottom(self):
         """Pop elements from the stack until the stack is empty or a fake bottom is reached."""
         
+        # pop all operators until we reach a bottom (empty stack or FAKE_BOTTOM)
         while self.operators_stack.peek() not in (None, FAKE_BOTTOM):
             self.generate_quadruple()
         
+        # if we reached a fake bottom, pop it
         if self.operators_stack.peek() == FAKE_BOTTOM:
             self.operators_stack.pop()
 
