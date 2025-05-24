@@ -1,5 +1,5 @@
 from __future__ import annotations
-from src.types import VarType         
+from src.types import VarType   
 
 class FrameResources:
     """
@@ -31,11 +31,15 @@ class FrameResources:
         )
     
     @staticmethod
-    def _fmt_frame(frame: "FrameResources" | None) -> str:
+    def split(frame: "FrameResources" | None) -> tuple[str, str, str, str]:
+        """ Returns a tuple of strings representing the resources in the frame."""
         if frame is None:
-            return "—" 
-        return (f"{frame.vars_int}/{frame.vars_float}"
-                f"  |  {frame.temps_int}/{frame.temps_float}")
+            dash = "—"
+            return dash, dash, dash, dash
+        return (str(frame.vars_int),
+                str(frame.vars_float),
+                str(frame.temps_int),
+                str(frame.temps_float))
     
     def __repr__(self) -> str:
         return (

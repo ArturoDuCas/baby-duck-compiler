@@ -102,28 +102,32 @@ class FunctionDir:
 
 
     def dump(self) -> str:
-        """Returns a string representation of the function directory."""
-        col_head = ("name", "type", "start", "vars_i/f | temps_i/f", "variables")
-        sep      = " │ "
+        col_head = ("name", "type", "start",
+                    "vars_i", "vars_f", "temps_i", "temps_f",
+                    "variables")
+        sep = " │ "
 
-        lines: list[str] = ["Function Directory",
-                            "─" * 80,
-                            sep.join(h.center(len(h)+2) for h in col_head),
-                            "─" * 80]
+        lines = ["Function Directory",
+                "─" * 100,
+                sep.join(h.center(len(h) + 2) for h in col_head),
+                "─" * 100]
 
         for name, func in self._dir.items():
-            frame = FrameResources._fmt_frame(func.frame_resources)
+            vi, vf, ti, tf = FrameResources.split(func.frame_resources)
 
-            var_tbl = indent(func.var_table.dump(), " " * 2) 
-            first_line = sep.join(str(x).center(len(h)+2) for x, h in
-                                  zip((name, func.type, func.initial_quad_index, frame),
-                                      col_head[:-1]))
+            # bloque “variables” ya alineado (usa tu VarTable.dump())
+            var_tbl = indent(func.var_table.dump(), " " * 2)
+
+            first_line = sep.join(str(x).center(len(h) + 2) for x, h in zip(
+                (name, func.type, func.initial_quad_index, vi, vf, ti, tf),
+                col_head[:-1]  # todas menos “variables”
+            ))
+
             lines.append(first_line)
-            lines.append(indent(var_tbl, " " * (len(sep)*4))) 
-            lines.append("─" * 80)
+            lines.append(indent(var_tbl, " " * (len(sep) * (len(col_head) - 1))))
+            lines.append("─" * 100)
 
         return "\n".join(lines)
-
 
     def __repr__(self) -> str:
         return self.dump()
