@@ -13,8 +13,8 @@ SEGMENT_BASE: Dict[SegmentType, int] = {
 
 TYPE_OFFSET = {
     "int":    0,
-    "float":  1000,
-    "string": 2000,
+    "float":  2000,
+    "string": 4000,
 }
 
 BLOCK_SIZE = 1000       
@@ -38,3 +38,8 @@ class MemoryManager:
         base   = SEGMENT_BASE[segment]
         offset = TYPE_OFFSET[var_type]
         return base + offset + idx
+
+    def reset_segment(self, segment: SegmentType) -> None:
+        """Resets the given segment to its initial state."""
+        for var_type in TYPE_OFFSET:
+            self._counters[segment][var_type] = 0

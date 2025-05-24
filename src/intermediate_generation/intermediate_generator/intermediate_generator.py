@@ -76,6 +76,11 @@ class IntermediateGenerator:
         # patch the GOTO to jump here (exit point of the statement)
         self.quadruples[goto_quad_idx].result = self.quadruples.next_quad
     
+    def reset_local_and_temp_memory(self) -> None:
+        """ Reset the local and temporary memory."""
+
+        self.memory_manager.reset_segment("local")
+        self.memory_manager.reset_segment("temp")
     
     def handle_else(self) -> None:
         """Handle the else statement."""
