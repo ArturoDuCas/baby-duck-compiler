@@ -201,6 +201,14 @@ class IntermediateGenerator:
         """Get the list of quadruples."""
         return self.quadruples
 
+    def get_operands_stack(self):
+        """Get the operands stack."""
+        return self.operands_stack
+
+    def get_operators_stack(self):
+        """Get the operators stack."""
+        return self.operators_stack
+
     def get_function_dir(self):
         """Get the function directory."""
         return self.function_dir
