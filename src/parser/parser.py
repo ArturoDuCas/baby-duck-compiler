@@ -103,8 +103,8 @@ def p_push_scope(p):
     func_name = p[-1] 
     
     # NP: add the function to the function directory
-    p.intermediate_generator.add_function_to_dir(func_name, FunctionTypeEnum.VOID)
-    
+    p.parser.intermediate_generator.add_function_to_dir(func_name, FunctionTypeEnum.VOID)
+
     # NP: update the current scope
     p.parser.current_function = func_name   
 
