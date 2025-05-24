@@ -40,6 +40,10 @@ class QuadruplesList:
     def get_actual_index(self) -> int:
         """Get the current quadruple index."""
         return self.next_quad - 1
+
+    def get_next_quad(self) -> int:
+        """Get the next quadruple index."""
+        return self.next_quad
     
     def dump(self) -> str:
         return "\n" + "\n".join(

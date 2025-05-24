@@ -6,11 +6,12 @@ from src.intermediate_generation.hierarchy import has_greater_or_equal_precedenc
 from src.intermediate_generation.memory_manager import MemoryManager
 from src.intermediate_generation.jump_stack import JumpStack
 from src.semantic.semantic_cube import get_resulting_type
-from src.types import ValueType
+from src.types import ValueType, FunctionTypeEnum, EndType
 from typing import Literal
 from src.semantic.constants import GLOBAL_FUNC_NAME, FAKE_BOTTOM
 from src.errors.internal_compiler_error import CompilerBug
 from src.semantic.function_dir import FunctionDir
+from src.virtual_machine.frame_resources import FrameResources
 
 TokenType = Literal["CTE_STRING", "CTE_INT", "ID"]
 
@@ -26,7 +27,7 @@ class IntermediateGenerator:
         self.constants_table = ConstantTable(memory_manager)
         self.jump_stack = JumpStack()
     
-    
+
     def generate_quadruple(self):
         operator = self.operators_stack.pop()
         right = self.operands_stack.pop()
@@ -39,10 +40,39 @@ class IntermediateGenerator:
         self.quadruples.append(operator, left.addr, right.addr, temp_addr)
         self.operands_stack.push(temp_addr, result_type)
 
+    def push_initial_quadruple(self): 
+        """Add the first quadruple (GOTO) at the beginning of the list."""
+        
+        self.quadruples.append("GOTO", None, None, None) # the destination will be patched later
+        self.jump_stack.push(self.quadruples.get_actual_index()) # push the index to the stack
+
     def mark_loop_start(self) -> None:
         """Mark the start of a loop."""
         self.jump_stack.push(self.quadruples.next_quad)
     
+    def add_function_to_dir(self, func_name: str, func_type: FunctionTypeEnum) -> None:
+        """Add a function to the directory."""
+        
+        next_quad = self.quadruples.get_next_quad()
+        self.function_dir.add_function(func_name, func_type, next_quad)
+
+    def add_era_quadruple(self, func_name: str) -> None:
+        """Add an ERA quadruple to the list."""
+        
+        self.quadruples.append("ERA", None, None, func_name)
+    
+    def add_gosub_quadruple(self, func_name: str) -> None:
+        """Add a GOSUB quadruple to the list."""
+        
+        # add the GOSUB quadruple
+        self.quadruples.append("GOSUB", None, None, func_name)
+        
+    def add_param_quadruple(self) -> None:
+        """Add a PARAM quadruple to the list."""
+        
+        param_addr = self.operands_stack.pop()
+        self.quadruples.append("PARAM", None, None, param_addr.addr)
+
     def generate_gotof_for_statement(self) -> None: 
         """Evaluate the result of the last quadruple and generate a GOTOF."""
         
@@ -54,14 +84,43 @@ class IntermediateGenerator:
         self.jump_stack.push(self.quadruples.get_actual_index())
 
     def assign_goto_destination(self) -> None:
-        """Assign the destination of the last GOTOF quadruple."""
-        # retrieve the index of gotof quadruple
-        gotof_quad_idx = self.jump_stack.pop()
+        """Assign the destination of the last GOTO quadruple."""
+        # retrieve the index of goto quadruple
+        goto_quad_idx = self.jump_stack.pop()
         
-        # patch the GOTOF to jump here (exit point of the statement)
-        self.quadruples[gotof_quad_idx].result = self.quadruples.next_quad
+        # patch the GOTO to jump here (exit point of the statement)
+        self.quadruples[goto_quad_idx].result = self.quadruples.next_quad
+
+    def register_parameter(self, func_name: str, param_name: str, param_type: ValueType) -> None:
+        """
+        Register a function parameter by adding it to the variable table and function signature.
+        """
+        
+        # add the parameter to the function's variable table
+        self.function_dir.add_var_to_function(func_name, param_name, param_type)
+        
+        # add the type to function's signature
+        self.function_dir.add_to_signature(func_name, param_type)
     
-    
+
+    def handle_function_end(self, current_function_name: str, end_type: EndType) -> None:
+        """Handle the end of a function."""
+
+        # get snapshots of the memory segments
+        locals_snapshot = self.memory_manager.snapshot_segment("local")
+        temps_snapshot = self.memory_manager.snapshot_segment("temp")
+        
+        # add frame resources to the function directory
+        new_frame = FrameResources.from_snapshots(locals_snapshot, temps_snapshot)
+        self.function_dir.set_frame_resources(current_function_name, new_frame)
+
+        # reset the local and temporary memory
+        self.memory_manager.reset_segment("local")
+        self.memory_manager.reset_segment("temp")
+        
+        # add quadruple for function end
+        self.quadruples.append(end_type, None, None, None)
+
     def handle_else(self) -> None:
         """Handle the else statement."""
         
@@ -159,6 +218,14 @@ class IntermediateGenerator:
     def get_quadruples(self):
         """Get the list of quadruples."""
         return self.quadruples
+
+    def get_operands_stack(self):
+        """Get the operands stack."""
+        return self.operands_stack
+
+    def get_operators_stack(self):
+        """Get the operators stack."""
+        return self.operators_stack
 
     def get_function_dir(self):
         """Get the function directory."""

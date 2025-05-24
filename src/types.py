@@ -1,8 +1,19 @@
 from typing import Literal
+from enum import Enum
+
+class FunctionTypeEnum(str, Enum):
+    VOID = "void"
+    PROGRAM = "program"
+
 
 # variable types
 VarType = Literal["int", "float", "string"]
-OperatorType = Literal["+", "-", "*", "/", "<", ">", "!=", "=", "PRINT", "GOTO", "GOTOF"]
+
+EndType = Literal["END_FUNC", "END_PROG"]
+BaseOperatorType = Literal["+", "-", "*", "/", "<", ">", "!=", "=", "PRINT", "GOTO", "GOTOF", "PARAM", "ERA", "GOSUB"]
+
+OperatorType = EndType | BaseOperatorType 
+
 
 # for representing addresses
 AddressType = str

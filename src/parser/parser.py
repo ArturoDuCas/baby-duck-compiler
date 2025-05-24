@@ -1,13 +1,36 @@
 import ply.yacc as yacc
 from src.lexer.lexer import tokens # even though it is not used, it is needed to parse the tokens
 from src.syntax_tree.node import Node
-from src.semantic.constants import GLOBAL_FUNC_NAME, VOID_FUNC_TYPE
+from src.semantic.constants import GLOBAL_FUNC_NAME
+from src.types import FunctionTypeEnum
 
 
 # ---------------------------------------------------------------------------
 #  Top Level
+
+def p_push_initial_quadruple(p):
+    """push_initial_quadruple :"""
+    
+    # NP: push the initial quadruple to the list (GOTO)
+    p.parser.intermediate_generator.push_initial_quadruple()
+
+def p_assign_destination_of_initial_quadruple(p):
+    """assign_destination_of_initial_quadruple :"""
+    
+    # NP: patch the initial quadruple with the destination
+    p.parser.intermediate_generator.assign_goto_destination()
+
+def p_handle_program_end(p):
+    """handle_program_end :"""
+    
+    # NP: add the resources needed to the function directory
+    #   : reset the memory manager for local and temporary variables
+    #   : add the end of the program quadruple
+    p.parser.intermediate_generator.handle_function_end(GLOBAL_FUNC_NAME, "END_PROG")
+    
+
 def p_program(p):
-    """program : PROGRAM ID SEMICOLON vars_or_empty funcs_or_empty MAIN body END"""
+    """program : PROGRAM ID SEMICOLON push_initial_quadruple vars_or_empty funcs_or_empty assign_destination_of_initial_quadruple MAIN body handle_program_end END"""
     
     p[0] = Node("Program", [p[2], p[4], p[5], p[7]])
 
@@ -80,9 +103,9 @@ def p_push_scope(p):
     func_name = p[-1] 
     
     # NP: add the function to the function directory
-    p.parser.function_dir.add_function(func_name, VOID_FUNC_TYPE)
-    
-    # NP: update the current function
+    p.parser.intermediate_generator.add_function_to_dir(func_name, FunctionTypeEnum.VOID)
+
+    # NP: update the current scope
     p.parser.current_function = func_name   
 
 
@@ -95,6 +118,11 @@ def p_func_header(p):
 def p_func_footer(p):
     """func_footer : R_BRACK SEMICOLON"""
     
+    # NP: add the resources needed to the function directory
+    #   : reset the memory manager for local and temporary variables
+    #   : add the end of the function quadruple
+    p.parser.intermediate_generator.handle_function_end(p.parser.current_function, "END_FUNC")
+
     # NP: go back to the global function
     p.parser.current_function = GLOBAL_FUNC_NAME
     p[0] = None
@@ -112,10 +140,9 @@ def p_funcs(p):
 def p_param(p):
     """param : ID COLON type"""
     
-    # NP: add the parameter to the respective var table
-    scope = p.parser.current_function
-    p.parser.function_dir.add_var_to_function(scope, p[1], p[3])
-
+    # NP: add the parameter to the respective var table and add the type to the function signature
+    id, type = p[1], p[3]
+    p.parser.intermediate_generator.register_parameter(p.parser.current_function, id, type)
 
     p[0] = Node("Param", [p[1], p[3]])
 
@@ -232,26 +259,50 @@ def p_cycle(p):
 
 
 # ---------------------------------------------------------------------------
+
+def p_add_era_quadruple(p):
+    """add_era_quadruple : ID"""
+    
+    # NP: add the ERA quadruple to the list
+    func_name = p[1]
+    p.parser.intermediate_generator.add_era_quadruple(func_name)
+    
+    p[0] = func_name
+
+def p_add_go_sub_quadruple(p):
+    """add_go_sub_quadruple :"""
+    
+    # NP: add the GOSUB quadruple to the list
+    func_name = p[-4]
+    p.parser.intermediate_generator.add_gosub_quadruple(func_name)
+
 #  Function Call
 def p_f_call(p):
-    """f_call : ID L_PARENT args_list R_PARENT SEMICOLON"""
+    """f_call : add_era_quadruple L_PARENT args_list R_PARENT add_go_sub_quadruple SEMICOLON"""
+
     p[0] = Node("Call", [p[1], p[3]])
 
 
+def p_add_param_quadruple(p):
+    """add_param_quadruple :"""
+    
+    # NP: add the PARAM quadruple to the list
+    p.parser.intermediate_generator.add_param_quadruple()
+
 def p_args_list(p):
-    """args_list : expresion args_list_helper
+    """args_list : expresion add_param_quadruple args_list_helper
                 | empty"""
-    if len(p) == 3:  # first production
-        p[0] = [p[1]] + p[2]
+    if len(p) == 4:  # first production
+        p[0] = [p[1]] + p[3]
     else:
         p[0] = []
 
 
 def p_args_list_helper(p):
-    """args_list_helper : COMMA expresion args_list_helper
+    """args_list_helper : COMMA expresion add_param_quadruple args_list_helper
                         | empty"""
-    if len(p) == 4:  # first production
-        p[0] = [p[2]] + p[3]
+    if len(p) == 5:  # first production
+        p[0] = [p[2]] + p[4]
     else:
         p[0] = []
 
@@ -389,15 +440,31 @@ def p_factor(p):
               | factor_sign factor_value"""
     if len(p) == 4: ## first production
         p[0] = p[2]
+        return
+    
+    
+    # second production
+    
+    # p[1] is the sign, p[2] is the value (lexeme, token_type)
+    sign, (lexeme, tok_type) = p[1], p[2]
+
+
+    # add the sign to the lexeme if it is a number
+    if sign == '-' and tok_type in ('CTE_INT', 'CTE_FLOAT'):
+        lexeme = -lexeme
+
+    # NP: push the operand to the intermediate generator
+    p.parser.intermediate_generator.push_operand(
+        lexeme      = lexeme,
+        token_type  = tok_type,
+        current_scope = p.parser.current_function,
+    )
+
+
+    if sign == '-':
+        p[0] = Node("Negate", [lexeme])
     else:
-        sign = p[1]
-        val = p[2]
-        if sign == '+':
-            p[0] = val
-        elif sign == '-':
-            p[0] = Node("Negate", [val])
-        else:
-            p[0] = val
+        p[0] = lexeme
 
 
 def p_factor_sign(p):
@@ -416,15 +483,7 @@ def p_factor_value(p):
                     | CTE_FLOAT"""
     
     
-    token_type = p.slice[1].type
-    
-    # NP: push the operand to the intermediate generator
-    p.parser.intermediate_generator.push_operand(lexeme=p[1],
-                                        token_type=token_type,
-                                        current_scope=p.parser.current_function
-                                        )
-    
-    p[0] = p[1]
+    p[0] = (p[1], p.slice[1].type)  # (lexeme, type)
 
 
 # ---------------------------------------------------------------------------
