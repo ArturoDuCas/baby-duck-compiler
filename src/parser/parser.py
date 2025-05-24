@@ -275,20 +275,26 @@ def p_f_call(p):
     p[0] = Node("Call", [p[1], p[3]])
 
 
+def p_add_param_quadruple(p):
+    """add_param_quadruple :"""
+    
+    # NP: add the PARAM quadruple to the list
+    p.parser.intermediate_generator.add_param_quadruple()
+
 def p_args_list(p):
-    """args_list : expresion args_list_helper
+    """args_list : expresion add_param_quadruple args_list_helper
                 | empty"""
-    if len(p) == 3:  # first production
-        p[0] = [p[1]] + p[2]
+    if len(p) == 4:  # first production
+        p[0] = [p[1]] + p[3]
     else:
         p[0] = []
 
 
 def p_args_list_helper(p):
-    """args_list_helper : COMMA expresion args_list_helper
+    """args_list_helper : COMMA expresion add_param_quadruple args_list_helper
                         | empty"""
-    if len(p) == 4:  # first production
-        p[0] = [p[2]] + p[3]
+    if len(p) == 5:  # first production
+        p[0] = [p[2]] + p[4]
     else:
         p[0] = []
 

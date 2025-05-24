@@ -60,6 +60,12 @@ class IntermediateGenerator:
         """Add an ERA quadruple to the list."""
         
         self.quadruples.append("ERA", None, None, func_name)
+        
+    def add_param_quadruple(self) -> None:
+        """Add a PARAM quadruple to the list."""
+        
+        param_addr = self.operands_stack.pop()
+        self.quadruples.append("PARAM", None, None, param_addr.addr)
 
     def generate_gotof_for_statement(self) -> None: 
         """Evaluate the result of the last quadruple and generate a GOTOF."""

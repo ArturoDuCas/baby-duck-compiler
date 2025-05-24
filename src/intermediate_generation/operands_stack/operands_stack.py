@@ -18,7 +18,7 @@ class OperandsStack:
         operand = Operand(addr, type)
         self.stack.append(operand)
 
-    def pop(self):
+    def pop(self) -> Operand:
         """Pop a operand from the stack."""
         if not self.stack:
             raise MissingOperandError("Missing operand", None)
