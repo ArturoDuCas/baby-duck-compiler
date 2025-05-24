@@ -18,7 +18,7 @@ def test_arithmetic_expression_generates_expected_quads(compiler):
     ops   = [q.operator for q in quads]
 
     # exptected sequence of operations
-    assert ops == ['-', '*', '+', '=']
+    assert ops == ['GOTO', '-', '*', '+', '=', 'END_PROG']
 
     # unique temporals
     const_tbl = gen.get_constants_table()
@@ -26,7 +26,7 @@ def test_arithmetic_expression_generates_expected_quads(compiler):
 
     # 'a' address in FunctionDir matches destination of '='
     addr_a = gen.get_function_dir().get_var(GLOBAL_FUNC_NAME, 'a').address
-    assert quads[-1].result == addr_a
+    assert quads[-2].result == addr_a
 
 
 # ────────────────────────────────────────────────────────────────────

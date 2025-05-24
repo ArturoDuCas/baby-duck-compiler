@@ -29,13 +29,13 @@ def test_while_generates_expected_quads(compiler):
 
     # expected sequence of operations
     ops = [q.operator for q in quads]
-    assert ops == ['<', 'GOTOF', '+', '=', 'GOTO']
+    assert ops == ['GOTO', '<', 'GOTOF', '+', '=', 'GOTO', 'END_PROG']
 
     # GOTO re-evaluates the condition
-    assert quads[4].result == 0
+    assert quads[5].result == 1
 
     # GOTOF skips just after the loop
-    assert quads[1].result == len(quads)
+    assert quads[2].result == len(quads) - 1
 
 
 # ────────────────────────────────────────────────────────────────────
@@ -57,9 +57,9 @@ def test_while_empty_body(compiler):
     quads = gen.get_quadruples().quadruples
     ops   = [q.operator for q in quads]
 
-    assert ops == ['<', 'GOTOF', 'GOTO']
-    assert quads[-1].result == 0                  
-    assert quads[1].result == len(quads)
+    assert ops == ['GOTO', '<', 'GOTOF', 'GOTO' , 'END_PROG']
+    assert quads[-2].result == 1                
+    assert quads[2].result == len(quads) - 1
 
 
 # ────────────────────────────────────────────────────────────────────
@@ -89,10 +89,10 @@ def test_if_without_else_generates_expected_quads(compiler):
     quads = gen.get_quadruples().quadruples
 
     ops = [q.operator for q in quads]
-    assert ops == ['<', 'GOTOF', '+', '=']
+    assert ops == ['GOTO', '<', 'GOTOF', '+', '=', 'END_PROG']
 
     # GOTOF that skips the body of the if
-    assert quads[1].result == len(quads)
+    assert quads[2].result == len(quads) - 1
 
 
 # ────────────────────────────────────────────────────────────────────
@@ -127,14 +127,14 @@ def test_if_with_else_generates_expected_quads(compiler):
     quads = gen.get_quadruples().quadruples
 
     ops = [q.operator for q in quads]
-    assert ops == ['<', 'GOTOF', '+', '=', 'GOTO', '+', '=']
+    assert ops == ['GOTO', '<', 'GOTOF', '+', '=', 'GOTO', '+', '=', 'END_PROG']
 
     # util indexes to check the jumps
-    gotof_idx = 1
-    goto_idx  = 4
+    gotof_idx = 2
+    goto_idx  = 5
 
     # GOTOF should skip the body of the IF
-    assert quads[gotof_idx].result == 5
+    assert quads[gotof_idx].result == 6
 
     # GOTO should skip the ELSE body
-    assert quads[goto_idx].result == len(quads)
+    assert quads[goto_idx].result == len(quads) - 1

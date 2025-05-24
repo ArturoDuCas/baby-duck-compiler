@@ -9,25 +9,27 @@ from src.errors.semantic_errors import (
 from src.semantic.constants import GLOBAL_FUNC_NAME
 from src.intermediate_generation.memory_manager import MemoryManager
 
+DUMMY_NEXT_QUAD = 0  # Dummy value for initial quadruple index
+
 @pytest.fixture
 def fd_mm():
     mm = MemoryManager()
     fd = FunctionDir(mm)
-    fd.add_function("main", "void")  
+    fd.add_function("main", "void", DUMMY_NEXT_QUAD)  
     return fd, mm
 
 
 # ---------- functions ----------
 def test_add_function(fd_mm):
     fd, _ = fd_mm
-    fd.add_function("compute", "int")
+    fd.add_function("compute", "int", DUMMY_NEXT_QUAD + 1)
     assert fd.get_function("compute").type == "int"
 
 
 def test_add_duplicate_function(fd_mm):
     fd, _ = fd_mm
     with pytest.raises(DuplicateFunctionError):
-        fd.add_function("main", "void")
+        fd.add_function("main", "void", DUMMY_NEXT_QUAD)
 
 
 # ---------- local vars ----------
