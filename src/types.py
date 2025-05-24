@@ -10,7 +10,7 @@ class FunctionTypeEnum(str, Enum):
 VarType = Literal["int", "float", "string"]
 
 EndType = Literal["END_FUNC", "END_PROG"]
-BaseOperatorType = Literal["+", "-", "*", "/", "<", ">", "!=", "=", "PRINT", "GOTO", "GOTOF", "PARAM", "ERA"]
+BaseOperatorType = Literal["+", "-", "*", "/", "<", ">", "!=", "=", "PRINT", "GOTO", "GOTOF", "PARAM", "ERA", "GOSUB"]
 
 OperatorType = EndType | BaseOperatorType 
 
