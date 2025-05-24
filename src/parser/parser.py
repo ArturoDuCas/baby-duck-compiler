@@ -379,7 +379,7 @@ def p_lp_fake(p):
 
 def p_rp_fake(p):
     "rp : R_PARENT"
-    p.parser.intermediate_generator.pop_until_fake_bottom()    
+    p.parser.intermediate_generator.pop_until_bottom()    
 
 def p_factor(p):
     """factor : lp expresion rp
