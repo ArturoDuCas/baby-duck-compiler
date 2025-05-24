@@ -263,13 +263,16 @@ def p_print(p):
     p[0] = Node("Print", p[3])
 
 
-def p_print_options(p):
-    """print_options : print_option more_expressions"""
+def p_add_print_quadruple(p):
+    """add_print_quadruple :"""
     
-    # NP: push a quadruple for the print
+    # NP: push a print quadruple 
     p.parser.intermediate_generator.create_print_quadruple()
+
+def p_print_options(p):
+    """print_options : print_option add_print_quadruple more_expressions"""
     
-    p[0] = [p[1]] + p[2]
+    p[0] = [p[1]] + p[3]
 
 
 def p_more_expressions(p):
