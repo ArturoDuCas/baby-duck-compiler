@@ -438,15 +438,31 @@ def p_factor(p):
               | factor_sign factor_value"""
     if len(p) == 4: ## first production
         p[0] = p[2]
+        return
+    
+    
+    # second production
+    
+    # p[1] is the sign, p[2] is the value (lexeme, token_type)
+    sign, (lexeme, tok_type) = p[1], p[2]
+
+
+    # add the sign to the lexeme if it is a number
+    if sign == '-' and tok_type in ('CTE_INT', 'CTE_FLOAT'):
+        lexeme = -lexeme
+
+    # NP: push the operand to the intermediate generator
+    p.parser.intermediate_generator.push_operand(
+        lexeme      = lexeme,
+        token_type  = tok_type,
+        current_scope = p.parser.current_function,
+    )
+
+
+    if sign == '-':
+        p[0] = Node("Negate", [lexeme])
     else:
-        sign = p[1]
-        val = p[2]
-        if sign == '+':
-            p[0] = val
-        elif sign == '-':
-            p[0] = Node("Negate", [val])
-        else:
-            p[0] = val
+        p[0] = lexeme
 
 
 def p_factor_sign(p):
@@ -465,15 +481,7 @@ def p_factor_value(p):
                     | CTE_FLOAT"""
     
     
-    token_type = p.slice[1].type
-    
-    # NP: push the operand to the intermediate generator
-    p.parser.intermediate_generator.push_operand(lexeme=p[1],
-                                        token_type=token_type,
-                                        current_scope=p.parser.current_function
-                                        )
-    
-    p[0] = p[1]
+    p[0] = (p[1], p.slice[1].type)  # (lexeme, type)
 
 
 # ---------------------------------------------------------------------------
