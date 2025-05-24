@@ -60,6 +60,12 @@ class IntermediateGenerator:
         """Add an ERA quadruple to the list."""
         
         self.quadruples.append("ERA", None, None, func_name)
+    
+    def add_gosub_quadruple(self, func_name: str) -> None:
+        """Add a GOSUB quadruple to the list."""
+        
+        # add the GOSUB quadruple
+        self.quadruples.append("GOSUB", None, None, func_name)
         
     def add_param_quadruple(self) -> None:
         """Add a PARAM quadruple to the list."""

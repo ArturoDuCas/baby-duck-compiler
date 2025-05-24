@@ -267,11 +267,20 @@ def p_add_era_quadruple(p):
     # NP: add the ERA quadruple to the list
     func_name = p[1]
     p.parser.intermediate_generator.add_era_quadruple(func_name)
+    
+    p[0] = func_name
+
+def p_add_go_sub_quadruple(p):
+    """add_go_sub_quadruple :"""
+    
+    # NP: add the GOSUB quadruple to the list
+    func_name = p[-4]
+    p.parser.intermediate_generator.add_gosub_quadruple(func_name)
 
 #  Function Call
 def p_f_call(p):
-    """f_call : add_era_quadruple L_PARENT args_list R_PARENT SEMICOLON"""
-    
+    """f_call : add_era_quadruple L_PARENT args_list R_PARENT add_go_sub_quadruple SEMICOLON"""
+
     p[0] = Node("Call", [p[1], p[3]])
 
 
