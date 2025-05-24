@@ -56,6 +56,11 @@ class IntermediateGenerator:
         next_quad = self.quadruples.get_next_quad()
         self.function_dir.add_function(func_name, func_type, next_quad)
 
+    def add_era_quadruple(self, func_name: str) -> None:
+        """Add an ERA quadruple to the list."""
+        
+        self.quadruples.append("ERA", None, None, func_name)
+
     def generate_gotof_for_statement(self) -> None: 
         """Evaluate the result of the last quadruple and generate a GOTOF."""
         

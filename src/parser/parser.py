@@ -263,9 +263,18 @@ def p_cycle(p):
 
 
 # ---------------------------------------------------------------------------
+
+def p_add_era_quadruple(p):
+    """add_era_quadruple : ID"""
+    
+    # NP: add the ERA quadruple to the list
+    func_name = p[1]
+    p.parser.intermediate_generator.add_era_quadruple(func_name)
+
 #  Function Call
 def p_f_call(p):
-    """f_call : ID L_PARENT args_list R_PARENT SEMICOLON"""
+    """f_call : add_era_quadruple L_PARENT args_list R_PARENT SEMICOLON"""
+    
     p[0] = Node("Call", [p[1], p[3]])
 
 
