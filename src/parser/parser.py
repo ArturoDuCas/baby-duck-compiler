@@ -109,6 +109,10 @@ def p_func_header(p):
 def p_func_footer(p):
     """func_footer : R_BRACK SEMICOLON"""
     
+    # NP: add the resources needed to the function directory
+    #   : reset the memory manager for local and temporary variables
+    p.parser.intermediate_generator.handle_function_end(p.parser.current_function)
+
     # NP: go back to the global function
     p.parser.current_function = GLOBAL_FUNC_NAME
     p[0] = None

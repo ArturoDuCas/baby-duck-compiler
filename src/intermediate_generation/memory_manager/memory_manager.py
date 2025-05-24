@@ -17,7 +17,7 @@ TYPE_OFFSET = {
     "string": 4000,
 }
 
-BLOCK_SIZE = 1000       
+BLOCK_SIZE = 2000       
 
 class MemoryManager:
     def __init__(self):
@@ -38,6 +38,14 @@ class MemoryManager:
         base   = SEGMENT_BASE[segment]
         offset = TYPE_OFFSET[var_type]
         return base + offset + idx
+
+    def snapshot_segment(self, segment: SegmentType) -> Dict[VarType, int]:
+        """
+        Returns a snapshot of the current state of the given segment.
+        E.g.: {"int": 5, "float": 3}
+        """
+
+        return self._counters[segment].copy()
 
     def reset_segment(self, segment: SegmentType) -> None:
         """Resets the given segment to its initial state."""

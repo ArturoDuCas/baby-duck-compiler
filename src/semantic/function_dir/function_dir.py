@@ -4,6 +4,7 @@ from src.semantic.constants import GLOBAL_FUNC_NAME
 from dataclasses import dataclass
 from src.intermediate_generation.memory_manager import MemoryManager
 from src.types import VarType, FunctionTypeEnum
+from src.virtual_machine.frame_resources import FrameResources
 
 # create types
 @dataclass
@@ -11,6 +12,7 @@ class Function:
     type: FunctionTypeEnum
     var_table: VarTable
     initial_quad_index: int
+    frame_resources: FrameResources | None = None
 
 
 FunctionDirType = dict[str, Function]    # function_name -> Function
@@ -89,6 +91,13 @@ class FunctionDir:
                 raise UndeclaredVariableError(var_name)
         
         return var
+
+    def set_frame_resources(self, func_name: str, frame_resources: FrameResources) -> None:
+        """Sets the frame resources for the function."""
+        
+        func = self.get_function(func_name)
+        func.frame_resources = frame_resources
+
 
     def __repr__(self) -> str:
         lines = ["Function Directory:"]

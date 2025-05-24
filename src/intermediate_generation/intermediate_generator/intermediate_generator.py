@@ -11,6 +11,7 @@ from typing import Literal
 from src.semantic.constants import GLOBAL_FUNC_NAME, FAKE_BOTTOM
 from src.errors.internal_compiler_error import CompilerBug
 from src.semantic.function_dir import FunctionDir
+from src.virtual_machine.frame_resources import FrameResources
 
 TokenType = Literal["CTE_STRING", "CTE_INT", "ID"]
 
@@ -76,9 +77,19 @@ class IntermediateGenerator:
         # patch the GOTO to jump here (exit point of the statement)
         self.quadruples[goto_quad_idx].result = self.quadruples.next_quad
     
-    def reset_local_and_temp_memory(self) -> None:
-        """ Reset the local and temporary memory."""
 
+    def handle_function_end(self, current_function_name: str) -> None:
+        """Handle the end of a function."""
+
+        # get snapshots of the memory segments
+        locals_snapshot = self.memory_manager.snapshot_segment("local")
+        temps_snapshot = self.memory_manager.snapshot_segment("temp")
+        
+        # add frame resources to the function directory
+        new_frame = FrameResources.from_snapshots(locals_snapshot, temps_snapshot)
+        self.function_dir.set_frame_resources(current_function_name, new_frame)
+
+        # reset the local and temporary memory
         self.memory_manager.reset_segment("local")
         self.memory_manager.reset_segment("temp")
     
