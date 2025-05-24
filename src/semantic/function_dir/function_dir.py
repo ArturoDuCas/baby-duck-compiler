@@ -1,4 +1,5 @@
 from src.semantic.var_table import VarTable, Var
+from textwrap import indent
 from src.errors.semantic_errors import DuplicateFunctionError, UndeclaredFunctionError, UndeclaredVariableError
 from src.semantic.constants import GLOBAL_FUNC_NAME
 from dataclasses import dataclass
@@ -26,6 +27,7 @@ class FunctionDir:
     def __init__(self, memory_manager: MemoryManager):
         self.memory_manager = memory_manager
         self.reset()
+    
 
     def reset(self) -> None:
         """
@@ -99,8 +101,32 @@ class FunctionDir:
         func.frame_resources = frame_resources
 
 
-    def __repr__(self) -> str:
-        lines = ["Function Directory:"]
+    def dump(self) -> str:
+        """Returns a string representation of the function directory."""
+        col_head = ("name", "type", "start", "vars_i/f | temps_i/f", "variables")
+        sep      = " │ "
+
+        lines: list[str] = ["Function Directory",
+                            "─" * 80,
+                            sep.join(h.center(len(h)+2) for h in col_head),
+                            "─" * 80]
+
         for name, func in self._dir.items():
-            lines.append(f"  {name} (type: {func.type}) → vars: {repr(func.var_table)}")
+            frame = FrameResources._fmt_frame(func.frame_resources)
+
+            var_tbl = indent(func.var_table.dump(), " " * 2) 
+            first_line = sep.join(str(x).center(len(h)+2) for x, h in
+                                  zip((name, func.type, func.initial_quad_index, frame),
+                                      col_head[:-1]))
+            lines.append(first_line)
+            lines.append(indent(var_tbl, " " * (len(sep)*4))) 
+            lines.append("─" * 80)
+
         return "\n".join(lines)
+
+
+    def __repr__(self) -> str:
+        return self.dump()
+    
+    def __str__(self) -> str:
+        return self.dump()

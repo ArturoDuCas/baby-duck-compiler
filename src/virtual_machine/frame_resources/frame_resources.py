@@ -1,3 +1,4 @@
+from __future__ import annotations
 from src.types import VarType         
 
 class FrameResources:
@@ -18,6 +19,7 @@ class FrameResources:
         self.temps_int = temps_int
         self.temps_float = temps_float
     
+    
     @classmethod
     def from_snapshots(cls, locals: dict[VarType, int], temps: dict[VarType, int]) -> "FrameResources":
         """Creates a FrameResources instance from memory snapshots."""
@@ -27,6 +29,13 @@ class FrameResources:
             temps_int  = temps.get("int",    0),
             temps_float= temps.get("float",  0),
         )
+    
+    @staticmethod
+    def _fmt_frame(frame: "FrameResources" | None) -> str:
+        if frame is None:
+            return "—" 
+        return (f"{frame.vars_int}/{frame.vars_float}"
+                f"  |  {frame.temps_int}/{frame.temps_float}")
     
     def __repr__(self) -> str:
         return (

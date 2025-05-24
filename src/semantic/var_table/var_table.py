@@ -37,5 +37,21 @@ class VarTable:
         
         return self._table.get(name)
 
+    def dump(self) -> str:
+        """Returns the table line by line ordered by variable name."""
+        if not self._table:
+            return "<empty>"
+
+        head  = "id │ type │ addr"
+        sep   = "───┼──────┼──────"
+        lines = [head, sep]
+
+        for name, var in self._table.items():
+            lines.append(f"{name:<3}│ {var.var_type:<4} │ {var.address}")
+        return "\n".join(lines)
+
+    def __str__(self) -> str:
+        return self.dump()
+
     def __repr__(self) -> str:
-        return f"VarTable({self._table})"
+        return self.dump()
