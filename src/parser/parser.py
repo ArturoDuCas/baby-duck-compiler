@@ -168,9 +168,6 @@ def p_statement(p):
 def p_assign(p):
     """assign : ID ASSIGN expresion SEMICOLON"""
     
-    #NP: push all the missing operations to the quadruple list 
-    p.parser.intermediate_generator.pop_until_bottom()
-    
     # NP: push the assignment to the quadruple list
     var = p[1]
     p.parser.intermediate_generator.create_assignment_quadruple(p.parser.current_function,  var)
@@ -300,8 +297,15 @@ def p_print_option(p):
 
 # ---------------------------------------------------------------------------
 #  Expressions
+
+def p_resolve_expression(p):
+    """resolve_expression :"""
+    
+    # NP: pop the stack until the bottom
+    p.parser.intermediate_generator.pop_until_bottom()
+
 def p_expresion(p):
-    """expresion : exp relational_part"""
+    """expresion : exp relational_part resolve_expression"""
     p[0] = Node("Exp", [p[1], p[2]])
 
 def p_relational_part(p):
@@ -372,17 +376,13 @@ def p_mult_or_div(p):
 
 # ---------------------------------------------------------------------------
 #  Factors
-def p_lp_fake(p):
+def p_lp(p):
     "lp : L_PARENT"
     p.parser.intermediate_generator.push_fake_bottom()
-    
 
-def p_rp_fake(p):
-    "rp : R_PARENT"
-    p.parser.intermediate_generator.pop_until_fake_bottom()    
 
 def p_factor(p):
-    """factor : lp expresion rp
+    """factor : lp expresion R_PARENT
               | factor_sign factor_value"""
     if len(p) == 4: ## first production
         p[0] = p[2]
