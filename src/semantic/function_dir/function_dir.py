@@ -10,6 +10,7 @@ from src.types import VarType, FunctionTypeEnum
 class Function:
     type: FunctionTypeEnum
     var_table: VarTable
+    initial_quad_index: int
 
 
 FunctionDirType = dict[str, Function]    # function_name -> Function
@@ -32,17 +33,17 @@ class FunctionDir:
         
         
         # add the global function
-        self._dir[GLOBAL_FUNC_NAME] = Function(FunctionTypeEnum.VOID, VarTable())
+        self._dir[GLOBAL_FUNC_NAME] = Function(FunctionTypeEnum.VOID, VarTable(), None)
 
 
-    def add_function(self, name: str, func_type: FunctionTypeEnum) -> None:
+    def add_function(self, name: str, func_type: FunctionTypeEnum, initial_quad_index: int) -> None:
         """
         Adds a function to the directory.
         """
         if name in self._dir:
             raise DuplicateFunctionError(name)
         
-        self._dir[name] = Function(func_type, VarTable())
+        self._dir[name] = Function(func_type, VarTable(), initial_quad_index)
     
     
     def add_var_to_function(self, func_name: str, var_name: str, var_type: VarType) -> None:

@@ -6,7 +6,7 @@ from src.intermediate_generation.hierarchy import has_greater_or_equal_precedenc
 from src.intermediate_generation.memory_manager import MemoryManager
 from src.intermediate_generation.jump_stack import JumpStack
 from src.semantic.semantic_cube import get_resulting_type
-from src.types import ValueType
+from src.types import ValueType, FunctionTypeEnum
 from typing import Literal
 from src.semantic.constants import GLOBAL_FUNC_NAME, FAKE_BOTTOM
 from src.errors.internal_compiler_error import CompilerBug
@@ -26,7 +26,7 @@ class IntermediateGenerator:
         self.constants_table = ConstantTable(memory_manager)
         self.jump_stack = JumpStack()
     
-    
+
     def generate_quadruple(self):
         operator = self.operators_stack.pop()
         right = self.operands_stack.pop()
@@ -49,6 +49,12 @@ class IntermediateGenerator:
         """Mark the start of a loop."""
         self.jump_stack.push(self.quadruples.next_quad)
     
+    def add_function_to_dir(self, func_name: str, func_type: FunctionTypeEnum) -> None:
+        """Add a function to the directory."""
+        
+        next_quad = self.quadruples.get_next_quad()
+        self.function_dir.add_function(func_name, func_type, next_quad)
+
     def generate_gotof_for_statement(self) -> None: 
         """Evaluate the result of the last quadruple and generate a GOTOF."""
         
