@@ -20,8 +20,16 @@ def p_assign_destination_of_initial_quadruple(p):
     # NP: patch the initial quadruple with the destination
     p.parser.intermediate_generator.assign_goto_destination()
 
+def p_handle_program_end(p):
+    """handle_program_end :"""
+    
+    # NP: add the resources needed to the function directory
+    #   : reset the memory manager for local and temporary variables
+    p.parser.intermediate_generator.handle_function_end(GLOBAL_FUNC_NAME)
+    
+
 def p_program(p):
-    """program : PROGRAM ID SEMICOLON push_initial_quadruple vars_or_empty funcs_or_empty assign_destination_of_initial_quadruple MAIN body END"""
+    """program : PROGRAM ID SEMICOLON push_initial_quadruple vars_or_empty funcs_or_empty assign_destination_of_initial_quadruple MAIN body handle_program_end END"""
     
     p[0] = Node("Program", [p[2], p[4], p[5], p[7]])
 
