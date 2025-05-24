@@ -11,7 +11,7 @@ class ConstantEntry:
 ByValueMapType = dict[tuple[ValueType, VarType], AddressType] # (value, type) -> addr
 ByAddrMapType = dict[AddressType, ConstantEntry] # addr -> ConstantEntry
 
-class ConstantTable:
+class ConstantsTable:
     """A table of constants used for building the intermediate representation."""
     
     def __init__(self, memory_manager: MemoryManager):

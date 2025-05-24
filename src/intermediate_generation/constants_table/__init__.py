@@ -1,4 +1,4 @@
-from .constants_table import ConstantTable
+from .constants_table import ConstantsTable
 
 
-__all__ = ["ConstantTable"]
+__all__ = ["ConstantsTable"]

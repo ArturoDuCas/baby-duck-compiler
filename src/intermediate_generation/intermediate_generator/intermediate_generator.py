@@ -1,7 +1,7 @@
 from src.intermediate_generation.operands_stack import OperandsStack
 from src.intermediate_generation.operators_stack import OperatorsStack
 from src.intermediate_generation.quadruples_list import QuadruplesList
-from src.intermediate_generation.constants_table import ConstantTable
+from src.intermediate_generation.constants_table import ConstantsTable
 from src.intermediate_generation.hierarchy import has_greater_or_equal_precedence
 from src.intermediate_generation.memory_manager import MemoryManager
 from src.intermediate_generation.jump_stack import JumpStack
@@ -25,7 +25,7 @@ class IntermediateGenerator:
         self.operands_stack = OperandsStack()
         self.operators_stack = OperatorsStack()
         self.quadruples = QuadruplesList()
-        self.constants_table = ConstantTable(memory_manager)
+        self.constants_table = ConstantsTable(memory_manager)
         self.jump_stack = JumpStack()
     
 
@@ -251,5 +251,5 @@ class IntermediateGenerator:
         self.operands_stack = OperandsStack()
         self.operators_stack = OperatorsStack()
         self.quadruples = QuadruplesList()
-        self.constants_table = ConstantTable(self.memory_manager)
+        self.constants_table = ConstantsTable(self.memory_manager)
         
