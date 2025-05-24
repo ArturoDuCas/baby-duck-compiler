@@ -72,7 +72,7 @@ def test_print_deduplicates_string_constants(compiler):
     print_quads = [q for q in gen.get_quadruples().quadruples
                    if q.operator == 'PRINT']
     assert len(print_quads) == 2
-    assert print_quads[0].left == print_quads[1].left == next(iter(gen.get_constants_table()._by_addr_map))
+    assert print_quads[0].result == print_quads[1].result == next(iter(gen.get_constants_table()._by_addr_map))
 
 
 # ────────────────────────────────────────────────────────────────────
