@@ -90,6 +90,17 @@ class IntermediateGenerator:
         
         # patch the GOTO to jump here (exit point of the statement)
         self.quadruples[goto_quad_idx].result = self.quadruples.next_quad
+
+    def register_parameter(self, func_name: str, param_name: str, param_type: ValueType) -> None:
+        """
+        Register a function parameter by adding it to the variable table and function signature.
+        """
+        
+        # add the parameter to the function's variable table
+        self.function_dir.add_var_to_function(func_name, param_name, param_type)
+        
+        # add the type to function's signature
+        self.function_dir.add_to_signature(func_name, param_type)
     
 
     def handle_function_end(self, current_function_name: str, end_type: EndType) -> None:

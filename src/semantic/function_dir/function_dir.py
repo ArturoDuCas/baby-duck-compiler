@@ -2,7 +2,7 @@ from src.semantic.var_table import VarTable, Var
 from textwrap import indent
 from src.errors.semantic_errors import DuplicateFunctionError, UndeclaredFunctionError, UndeclaredVariableError
 from src.semantic.constants import GLOBAL_FUNC_NAME
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from src.intermediate_generation.memory_manager import MemoryManager
 from src.types import VarType, FunctionTypeEnum
 from src.virtual_machine.frame_resources import FrameResources
@@ -13,6 +13,7 @@ class Function:
     type: FunctionTypeEnum
     var_table: VarTable
     initial_quad_index: int
+    signature: list[VarType] = field(default_factory=list)
     frame_resources: FrameResources | None = None
 
 
@@ -70,6 +71,7 @@ class FunctionDir:
             raise UndeclaredFunctionError(name)
         return func
 
+
     def get_var_minimal(self, func_name: str, var_name: str) -> Var:
         """
         Returns the variable with the given name from the function's variable table.
@@ -77,7 +79,6 @@ class FunctionDir:
         
         func = self.get_function(func_name)
         return func.var_table.get_var(var_name)
-
     
     def get_var(self, func_name: str, var_name: str) -> Var:
         """
@@ -94,6 +95,7 @@ class FunctionDir:
         
         return var
 
+
     def set_frame_resources(self, func_name: str, frame_resources: FrameResources) -> None:
         """Sets the frame resources for the function."""
         
@@ -101,36 +103,67 @@ class FunctionDir:
         func.frame_resources = frame_resources
 
 
+    def add_to_signature(self, func_name: str, type: VarType) -> None:
+        """Adds a type to the function's signature."""
+        func = self.get_function(func_name)
+        func.signature.append(type)
+
+
     def dump(self) -> str:
-        col_head = ("name", "type", "start",
-                    "vars_i", "vars_f", "temps_i", "temps_f",
-                    "variables")
+        col_head = (
+            "name",
+            "type",
+            "start",
+            "vars_i",
+            "vars_f",
+            "temps_i",
+            "temps_f",
+            "signature",
+            "variables",
+        )
         sep = " │ "
 
-        lines = ["Function Directory",
-                "─" * 100,
-                sep.join(h.center(len(h) + 2) for h in col_head),
-                "─" * 100]
+        lines = [
+            "Function Directory",
+            "─" * 110,
+            sep.join(h.center(len(h) + 2) for h in col_head),
+            "─" * 110,
+        ]
 
         for name, func in self._dir.items():
             vi, vf, ti, tf = FrameResources.split(func.frame_resources)
+            sig = ", ".join(func.signature) or "—"
 
-            # bloque “variables” ya alineado (usa tu VarTable.dump())
             var_tbl = indent(func.var_table.dump(), " " * 2)
-
-            first_line = sep.join(str(x).center(len(h) + 2) for x, h in zip(
-                (name, func.type, func.initial_quad_index, vi, vf, ti, tf),
-                col_head[:-1]  # todas menos “variables”
-            ))
+            first_line = sep.join(
+                str(x).center(len(h) + 2)
+                for x, h in zip(
+                    (
+                        name,
+                        func.type,
+                        func.initial_quad_index,
+                        vi,
+                        vf,
+                        ti,
+                        tf,
+                        sig,
+                    ),
+                    col_head[:-1],
+                )
+            )
 
             lines.append(first_line)
-            lines.append(indent(var_tbl, " " * (len(sep) * (len(col_head) - 1))))
-            lines.append("─" * 100)
+            lines.append(
+                indent(var_tbl, " " * (len(sep) * (len(col_head) - 1)))
+            )
+            lines.append("─" * 110)
 
         return "\n".join(lines)
 
+
     def __repr__(self) -> str:
         return self.dump()
+
     
     def __str__(self) -> str:
         return self.dump()

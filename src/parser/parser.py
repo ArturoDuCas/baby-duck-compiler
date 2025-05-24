@@ -140,10 +140,9 @@ def p_funcs(p):
 def p_param(p):
     """param : ID COLON type"""
     
-    # NP: add the parameter to the respective var table
-    scope = p.parser.current_function
-    p.parser.function_dir.add_var_to_function(scope, p[1], p[3])
-
+    # NP: add the parameter to the respective var table and add the type to the function signature
+    id, type = p[1], p[3]
+    p.parser.intermediate_generator.register_parameter(p.parser.current_function, id, type)
 
     p[0] = Node("Param", [p[1], p[3]])
 
