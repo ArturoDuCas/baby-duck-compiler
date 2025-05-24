@@ -266,9 +266,8 @@ def p_print(p):
 def p_add_print_quadruple(p):
     """add_print_quadruple :"""
     
-    # NP: push print quadruple 
+    # NP: push a print quadruple 
     p.parser.intermediate_generator.create_print_quadruple()
-
 
 def p_print_options(p):
     """print_options : print_option add_print_quadruple more_expressions"""
