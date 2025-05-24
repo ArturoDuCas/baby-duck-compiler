@@ -46,9 +46,6 @@ class IntermediateGenerator:
     def generate_gotof_for_statement(self) -> None: 
         """Evaluate the result of the last quadruple and generate a GOTOF."""
         
-        # generate the missing quadruples until the bottom of the stack
-        self.pop_until_bottom()
-        
         # get the last quadruple generated
         last_quad = self.quadruples.get_last_quadruple()
         
