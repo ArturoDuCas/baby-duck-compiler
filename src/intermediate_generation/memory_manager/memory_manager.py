@@ -26,6 +26,14 @@ class MemoryManager:
             seg: {t: 0 for t in TYPE_OFFSET}
             for seg in SEGMENT_BASE
         }
+    
+    @staticmethod
+    def get_base_addr(segment: SegmentType, var_type: VarType) -> int:
+        """Returns the base address for the given segment and variable type."""
+        
+        base   = SEGMENT_BASE[segment]
+        offset = TYPE_OFFSET[var_type]
+        return base + offset
 
     def new_addr(self, segment: SegmentType, var_type: VarType) -> int:
         """Returns a new address for the given segment and variable type."""
@@ -35,9 +43,8 @@ class MemoryManager:
         if idx >= BLOCK_SIZE:
             raise RuntimeError(f"Out of memory for {var_type} in segment {segment}")
 
-        base   = SEGMENT_BASE[segment]
-        offset = TYPE_OFFSET[var_type]
-        return base + offset + idx
+        base_addr = self.get_base_addr(segment, var_type)
+        return base_addr + idx
 
     def snapshot_segment(self, segment: SegmentType) -> Dict[VarType, int]:
         """
