@@ -8,7 +8,12 @@ class FunctionTypeEnum(str, Enum):
 
 # variable types
 VarType = Literal["int", "float", "string"]
-OperatorType = Literal["+", "-", "*", "/", "<", ">", "!=", "=", "PRINT", "GOTO", "GOTOF"]
+
+EndType = Literal["END_FUNC", "END_PROG"]
+BaseOperatorType = Literal["+", "-", "*", "/", "<", ">", "!=", "=", "PRINT", "GOTO", "GOTOF"]
+
+OperatorType = EndType | BaseOperatorType 
+
 
 # for representing addresses
 AddressType = str

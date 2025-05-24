@@ -6,7 +6,7 @@ from src.intermediate_generation.hierarchy import has_greater_or_equal_precedenc
 from src.intermediate_generation.memory_manager import MemoryManager
 from src.intermediate_generation.jump_stack import JumpStack
 from src.semantic.semantic_cube import get_resulting_type
-from src.types import ValueType, FunctionTypeEnum
+from src.types import ValueType, FunctionTypeEnum, EndType
 from typing import Literal
 from src.semantic.constants import GLOBAL_FUNC_NAME, FAKE_BOTTOM
 from src.errors.internal_compiler_error import CompilerBug
@@ -78,7 +78,7 @@ class IntermediateGenerator:
         self.quadruples[goto_quad_idx].result = self.quadruples.next_quad
     
 
-    def handle_function_end(self, current_function_name: str) -> None:
+    def handle_function_end(self, current_function_name: str, end_type: EndType) -> None:
         """Handle the end of a function."""
 
         # get snapshots of the memory segments
@@ -92,7 +92,10 @@ class IntermediateGenerator:
         # reset the local and temporary memory
         self.memory_manager.reset_segment("local")
         self.memory_manager.reset_segment("temp")
-    
+        
+        # add quadruple for function end
+        self.quadruples.append(end_type, None, None, None)
+
     def handle_else(self) -> None:
         """Handle the else statement."""
         

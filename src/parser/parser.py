@@ -25,7 +25,8 @@ def p_handle_program_end(p):
     
     # NP: add the resources needed to the function directory
     #   : reset the memory manager for local and temporary variables
-    p.parser.intermediate_generator.handle_function_end(GLOBAL_FUNC_NAME)
+    #   : add the end of the program quadruple
+    p.parser.intermediate_generator.handle_function_end(GLOBAL_FUNC_NAME, "END_PROG")
     
 
 def p_program(p):
@@ -119,7 +120,8 @@ def p_func_footer(p):
     
     # NP: add the resources needed to the function directory
     #   : reset the memory manager for local and temporary variables
-    p.parser.intermediate_generator.handle_function_end(p.parser.current_function)
+    #   : add the end of the function quadruple
+    p.parser.intermediate_generator.handle_function_end(p.parser.current_function, "END_FUNC")
 
     # NP: go back to the global function
     p.parser.current_function = GLOBAL_FUNC_NAME
