@@ -39,6 +39,12 @@ class IntermediateGenerator:
         self.quadruples.append(operator, left.addr, right.addr, temp_addr)
         self.operands_stack.push(temp_addr, result_type)
 
+    def push_initial_quadruple(self): 
+        """Add the first quadruple (GOTO) at the beginning of the list."""
+        
+        self.quadruples.append("GOTO", None, None, None) # the destination will be patched later
+        self.jump_stack.push(self.quadruples.get_actual_index()) # push the index to the stack
+
     def mark_loop_start(self) -> None:
         """Mark the start of a loop."""
         self.jump_stack.push(self.quadruples.next_quad)
@@ -57,12 +63,12 @@ class IntermediateGenerator:
         self.jump_stack.push(self.quadruples.get_actual_index())
 
     def assign_goto_destination(self) -> None:
-        """Assign the destination of the last GOTOF quadruple."""
-        # retrieve the index of gotof quadruple
-        gotof_quad_idx = self.jump_stack.pop()
+        """Assign the destination of the last GOTO quadruple."""
+        # retrieve the index of goto quadruple
+        goto_quad_idx = self.jump_stack.pop()
         
-        # patch the GOTOF to jump here (exit point of the statement)
-        self.quadruples[gotof_quad_idx].result = self.quadruples.next_quad
+        # patch the GOTO to jump here (exit point of the statement)
+        self.quadruples[goto_quad_idx].result = self.quadruples.next_quad
     
     
     def handle_else(self) -> None:

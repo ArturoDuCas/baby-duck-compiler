@@ -6,8 +6,21 @@ from src.semantic.constants import GLOBAL_FUNC_NAME, VOID_FUNC_TYPE
 
 # ---------------------------------------------------------------------------
 #  Top Level
+
+def p_push_initial_quadruple(p):
+    """push_initial_quadruple :"""
+    
+    # NP: push the initial quadruple to the list (GOTO)
+    p.parser.intermediate_generator.push_initial_quadruple()
+
+def p_assign_destination_of_initial_quadruple(p):
+    """assign_destination_of_initial_quadruple :"""
+    
+    # NP: patch the initial quadruple with the destination
+    p.parser.intermediate_generator.assign_goto_destination()
+
 def p_program(p):
-    """program : PROGRAM ID SEMICOLON vars_or_empty funcs_or_empty MAIN body END"""
+    """program : PROGRAM ID SEMICOLON push_initial_quadruple vars_or_empty funcs_or_empty assign_destination_of_initial_quadruple MAIN body END"""
     
     p[0] = Node("Program", [p[2], p[4], p[5], p[7]])
 
