@@ -64,9 +64,6 @@ class IntermediateGenerator:
     def generate_gotof_for_statement(self) -> None: 
         """Evaluate the result of the last quadruple and generate a GOTOF."""
         
-        # generate the missing quadruples until the bottom of the stack
-        self.pop_until_bottom()
-        
         # get the last quadruple generated
         last_quad = self.quadruples.get_last_quadruple()
         
@@ -152,17 +149,15 @@ class IntermediateGenerator:
 
 
     def pop_until_bottom(self):
-        """Pop elements from the stack until a bottom is reached."""
-        while self.operators_stack.peek():
+        """Pop elements from the stack until the stack is empty or a fake bottom is reached."""
+        
+        # pop all operators until we reach a bottom (empty stack or FAKE_BOTTOM)
+        while self.operators_stack.peek() not in (None, FAKE_BOTTOM):
             self.generate_quadruple()
-
-
-    def pop_until_fake_bottom(self):
-        """Pop elements from the stack until a fake bottom is reached."""
-        while self.operators_stack.peek() != FAKE_BOTTOM:
-            self.generate_quadruple()
-        self.operators_stack.pop()  # remove the fake bottom
-    
+        
+        # if we reached a fake bottom, pop it
+        if self.operators_stack.peek() == FAKE_BOTTOM:
+            self.operators_stack.pop()
 
     def push_operand(self, lexeme: ValueType, token_type: TokenType, current_scope: str):
         """Push an operand onto the stack."""
