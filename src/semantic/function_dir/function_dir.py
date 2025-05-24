@@ -1,15 +1,14 @@
 from src.semantic.var_table import VarTable, Var
 from src.errors.semantic_errors import DuplicateFunctionError, UndeclaredFunctionError, UndeclaredVariableError
-from src.semantic.constants import GLOBAL_FUNC_NAME, GLOBAL_FUNC_TYPE
+from src.semantic.constants import GLOBAL_FUNC_NAME
 from dataclasses import dataclass
 from src.intermediate_generation.memory_manager import MemoryManager
-from src.types import VarType
-
+from src.types import VarType, FunctionTypeEnum
 
 # create types
 @dataclass
 class Function:
-    type: str                 # e.g. "int", "float", "void" or GLOBAL_FUNC_TYPE
+    type: FunctionTypeEnum
     var_table: VarTable
 
 
@@ -33,10 +32,10 @@ class FunctionDir:
         
         
         # add the global function
-        self._dir[GLOBAL_FUNC_NAME] = Function(GLOBAL_FUNC_TYPE, VarTable())
+        self._dir[GLOBAL_FUNC_NAME] = Function(FunctionTypeEnum.VOID, VarTable())
 
 
-    def add_function(self, name: str, func_type: str) -> None:
+    def add_function(self, name: str, func_type: FunctionTypeEnum) -> None:
         """
         Adds a function to the directory.
         """

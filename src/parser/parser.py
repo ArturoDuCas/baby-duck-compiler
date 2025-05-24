@@ -1,7 +1,8 @@
 import ply.yacc as yacc
 from src.lexer.lexer import tokens # even though it is not used, it is needed to parse the tokens
 from src.syntax_tree.node import Node
-from src.semantic.constants import GLOBAL_FUNC_NAME, VOID_FUNC_TYPE
+from src.semantic.constants import GLOBAL_FUNC_NAME
+from src.types import FunctionTypeEnum
 
 
 # ---------------------------------------------------------------------------
@@ -93,7 +94,7 @@ def p_push_scope(p):
     func_name = p[-1] 
     
     # NP: add the function to the function directory
-    p.parser.function_dir.add_function(func_name, VOID_FUNC_TYPE)
+    p.parser.function_dir.add_function(func_name, FunctionTypeEnum.VOID)
     
     # NP: update the current function
     p.parser.current_function = func_name   
