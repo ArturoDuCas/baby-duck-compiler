@@ -1,6 +1,6 @@
 from src.semantic.var_table import VarTable, Var
 from textwrap import indent
-from src.errors.semantic_errors import DuplicateFunctionError, UndeclaredFunctionError, UndeclaredVariableError
+from src.errors.semantic_errors import DuplicateFunctionError, UndeclaredFunctionError, UndeclaredVariableError, WrongNumberOfParametersError, InvalidParameterTypeError
 from src.semantic.constants import GLOBAL_FUNC_NAME
 from dataclasses import dataclass, field
 from src.intermediate_generation.memory_manager import MemoryManager
@@ -107,7 +107,42 @@ class FunctionDir:
         """Adds a type to the function's signature."""
         func = self.get_function(func_name)
         func.signature.append(type)
-
+    
+    def validate_signature_argument(self, func_name: str, param_type: VarType, current_index: int) -> None:
+        """
+        Validates an argument from the function's signature.
+        Raises an error if the signature is not valid.
+        """
+        func = self.get_function(func_name)
+        
+        # more parameters than expected
+        if current_index >= len(func.signature):
+            raise WrongNumberOfParametersError(
+                func_name,
+                len(func.signature),
+                current_index + 1,  # +1 because current_index is 0-based
+            )
+        
+        # wrong type for the parameter
+        expected_type = func.signature[current_index]
+        if expected_type != param_type:
+            raise InvalidParameterTypeError(
+                func_name,
+                expected_type,
+                param_type,
+            )
+    
+    def validate_signature_length(self, func_name: str, length: int) -> None:
+        """
+        Checks if the function has a signature of the given length.
+        """
+        func = self.get_function(func_name)
+        if len(func.signature) != length:
+            raise WrongNumberOfParametersError(
+                func_name,
+                len(func.signature),
+                length,
+            )
 
     def dump(self) -> str:
         col_head = (

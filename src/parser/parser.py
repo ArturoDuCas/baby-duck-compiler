@@ -260,37 +260,41 @@ def p_cycle(p):
 
 # ---------------------------------------------------------------------------
 
-def p_add_era_quadruple(p):
-    """add_era_quadruple : ID"""
+def p_handle_function_called_start(p):
+    """handle_function_called_start : ID"""
     
     # NP: add the ERA quadruple to the list
+    #   :  update the current function that is being called
     func_name = p[1]
-    p.parser.intermediate_generator.add_era_quadruple(func_name)
+    p.parser.intermediate_generator.handle_function_called_start(func_name)
     
     p[0] = func_name
 
-def p_add_go_sub_quadruple(p):
-    """add_go_sub_quadruple :"""
+def p_handle_function_call_finished(p):
+    """handle_function_call_finished :"""
     
     # NP: add the GOSUB quadruple to the list
-    func_name = p[-4]
-    p.parser.intermediate_generator.add_gosub_quadruple(func_name)
+    #   : reset the current function and current param index
+    
+    p.parser.intermediate_generator.handle_function_call_finished()
 
 #  Function Call
 def p_f_call(p):
-    """f_call : add_era_quadruple L_PARENT args_list R_PARENT add_go_sub_quadruple SEMICOLON"""
+    """f_call : handle_function_called_start L_PARENT args_list R_PARENT handle_function_call_finished SEMICOLON"""
 
     p[0] = Node("Call", [p[1], p[3]])
 
 
-def p_add_param_quadruple(p):
-    """add_param_quadruple :"""
+def p_handle_new_param(p):
+    """handle_new_param :"""
     
     # NP: add the PARAM quadruple to the list
-    p.parser.intermediate_generator.add_param_quadruple()
+    #   : verify the signature of the function
+    
+    p.parser.intermediate_generator.handle_new_param()
 
 def p_args_list(p):
-    """args_list : expresion add_param_quadruple args_list_helper
+    """args_list : expresion handle_new_param args_list_helper
                 | empty"""
     if len(p) == 4:  # first production
         p[0] = [p[1]] + p[3]
@@ -299,7 +303,7 @@ def p_args_list(p):
 
 
 def p_args_list_helper(p):
-    """args_list_helper : COMMA expresion add_param_quadruple args_list_helper
+    """args_list_helper : COMMA expresion handle_new_param args_list_helper
                         | empty"""
     if len(p) == 5:  # first production
         p[0] = [p[2]] + p[4]
