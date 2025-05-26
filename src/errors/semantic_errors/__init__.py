@@ -17,4 +17,5 @@ __all__ = [
     "DuplicateFunctionError",
     "UndeclaredFunctionError",
     "InvalidParameterTypeError",
+    "WrongNumberOfParametersError",
 ]
