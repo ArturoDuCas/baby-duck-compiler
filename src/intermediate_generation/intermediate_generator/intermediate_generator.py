@@ -27,7 +27,9 @@ class IntermediateGenerator:
         self.quadruples = QuadruplesList()
         self.constants_table = ConstantsTable(memory_manager)
         self.jump_stack = JumpStack()
-    
+
+        self.current_function_called = None # function name of the last function called
+        self.current_param_index = 0  # used for validating parameters in function calls
 
     def generate_quadruple(self):
         operator = self.operators_stack.pop()
@@ -59,25 +61,56 @@ class IntermediateGenerator:
         next_quad = self.quadruples.get_next_quad()
         self.function_dir.add_function(func_name, func_type, next_quad)
 
-    def add_era_quadruple(self, func_name: str) -> None:
-        """Add an ERA quadruple to the list."""
+    def handle_function_called_start(self, func_name: str) -> None:
+        """
+        Handle the start of a function call by adding an ERA quadruple and 
+        setting the current function called.
+        """
         
+        # set the current function called
+        self.current_function_called = func_name
+        self.current_param_index = 0
+        
+        # add an era quadruple to the list
         quadruple = Quadruple("ERA", None, None, func_name)
         self.quadruples.append(quadruple)
     
-    def add_gosub_quadruple(self, func_name: str) -> None:
-        """Add a GOSUB quadruple to the list."""
+    def handle_function_call_finished(self) -> None:
+        """
+        Handle the end of a function call by adding a GOSUB quadruple.
+        Validate the function signature based on the current parameter index.
+        """
         
+        # validate that all parameters have been passed
+        self.function_dir.validate_signature_length(self.current_function_called,
+                                                    self.current_param_index)
+
         # add the GOSUB quadruple
-        quadruple = Quadruple("GOSUB", None, None, func_name)
-        self.quadruples.append(quadruple)
+        quadruple = Quadruple("GOSUB", None, None, self.current_function_called)        self.quadruples.append(quadruple)
         
-    def add_param_quadruple(self) -> None:
-        """Add a PARAM quadruple to the list."""
+        
+
+    def handle_new_param(self) -> None:
+        """
+        Add a PARAM quadruple to the list.
+        Validate the signature of the function based on the current parameter index.
+        """
         
         param_addr = self.operands_stack.pop()
+        
+        # add the quadruple for the parameter
         quadruple = Quadruple("PARAM", None, None, param_addr.addr)
         self.quadruples.append(quadruple)
+        
+        # validate the signature of the function
+        self.function_dir.validate_signature_argument(self.current_function_called,
+                                                        param_addr.type,
+                                                        self.current_param_index
+                                                    )
+        
+        # increment the current parameter index
+        self.current_param_index += 1
+
 
     def generate_gotof_for_statement(self) -> None: 
         """Evaluate the result of the last quadruple and generate a GOTOF."""
@@ -251,5 +284,7 @@ class IntermediateGenerator:
         self.operands_stack = OperandsStack()
         self.operators_stack = OperatorsStack()
         self.quadruples = QuadruplesList()
-        self.constants_table = ConstantsTable(self.memory_manager)
-        
+        self.constants_table = ConstantTable(self.memory_manager)
+        self.jump_stack = JumpStack()
+        self.current_function_called = None
+        self.current_param_index = 0        

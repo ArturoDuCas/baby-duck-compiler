@@ -5,6 +5,8 @@ from .duplicate_variable_error import DuplicateVariableError
 from .undeclared_variable_error import UndeclaredVariableError
 from .duplicate_function_error import DuplicateFunctionError
 from .undeclared_function_error import UndeclaredFunctionError
+from .invalid_parameter_type_error import InvalidParameterTypeError
+from .wrong_number_of_parameters_error import WrongNumberOfParametersError
 
 __all__ = [
     "SemanticError",
@@ -14,4 +16,6 @@ __all__ = [
     "UndeclaredVariableError",
     "DuplicateFunctionError",
     "UndeclaredFunctionError",
+    "InvalidParameterTypeError",
+    "WrongNumberOfParametersError",
 ]

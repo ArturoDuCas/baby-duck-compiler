@@ -6,7 +6,7 @@ from src.errors.semantic_errors import (
 )
 
 # ---------------------------------------------------------------------------
-# 1) Caso válido: variables globales y locales registradas
+# valid case: program registers global and function variables
 # ---------------------------------------------------------------------------
 def test_valid_program_registers_global_and_function_vars(compiler):
     parser, lexer, gen = compiler
@@ -32,22 +32,22 @@ def test_valid_program_registers_global_and_function_vars(compiler):
     """
     parser.parse(source, lexer=lexer)
 
-    # — funciones registradas —
+    # registered functions
     assert set(fdir._dir.keys()) == {GLOBAL_FUNC_NAME, "foo"}
 
-    # — variables globales —
+    # registered global variables
     gvars = fdir._dir[GLOBAL_FUNC_NAME].var_table
     assert gvars.get_var("a").var_type == "int"
     assert gvars.get_var("b").var_type == "int"
     assert gvars.get_var("x").var_type == "float"
 
-    # — variables locales en foo —
+    # registered local variables in foo
     lvars = fdir._dir["foo"].var_table
     assert lvars.get_var("r").var_type == "int"
 
 
 # ---------------------------------------------------------------------------
-# 2) Error: función duplicada
+# error: duplicated function
 # ---------------------------------------------------------------------------
 def test_duplicate_function_declaration_raises(compiler):
     parser, lexer, _ = compiler
@@ -63,7 +63,7 @@ def test_duplicate_function_declaration_raises(compiler):
 
 
 # ---------------------------------------------------------------------------
-# 3) Error: variable global duplicada
+# error: global variable duplicated
 # ---------------------------------------------------------------------------
 def test_duplicate_global_variable_raises(compiler):
     parser, lexer, _ = compiler
@@ -79,7 +79,7 @@ def test_duplicate_global_variable_raises(compiler):
 
 
 # ---------------------------------------------------------------------------
-# 4) Error: variable local duplicada en una función
+# error: local variable duplicated in function
 # ---------------------------------------------------------------------------
 def test_duplicate_local_variable_raises(compiler):
     parser, lexer, _ = compiler
