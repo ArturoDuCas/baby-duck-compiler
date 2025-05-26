@@ -66,27 +66,25 @@ class IntermediateGenerator:
         
         # set the current function called
         self.current_function_called = func_name
+        self.current_param_index = 0
         
         # add an era quadruple to the list
         self.quadruples.append("ERA", None, None, func_name)
     
     def handle_function_call_finished(self) -> None:
         """
-        Handle the end of a function call by adding a GOSUB quadruple and resetting the state.
-        Also validate that all parameters have been passed correctly.
+        Handle the end of a function call by adding a GOSUB quadruple.
+        Validate the function signature based on the current parameter index.
         """
         
         # validate that all parameters have been passed
         self.function_dir.validate_signature_length(self.current_function_called,
                                                     self.current_param_index)
-        
+
         # add the GOSUB quadruple
-        self.quadruples.append("GOSUB", None, None, self.current_function_called)
+        self.quadruples.append("GOSUB", None, None, self.current_function_called)        
         
-        # reset the current function called and parameter index
-        self.current_function_called = None
-        self.current_param_index = 0
-        
+
     def handle_new_param(self) -> None:
         """
         Add a PARAM quadruple to the list.
