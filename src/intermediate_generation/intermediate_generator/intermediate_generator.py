@@ -276,4 +276,6 @@ class IntermediateGenerator:
         self.operators_stack = OperatorsStack()
         self.quadruples = QuadruplesList()
         self.constants_table = ConstantTable(self.memory_manager)
-        
+        self.jump_stack = JumpStack()
+        self.current_function_called = None
+        self.current_param_index = 0        
