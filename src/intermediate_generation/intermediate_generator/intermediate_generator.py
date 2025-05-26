@@ -86,7 +86,8 @@ class IntermediateGenerator:
                                                     self.current_param_index)
 
         # add the GOSUB quadruple
-        quadruple = Quadruple("GOSUB", None, None, self.current_function_called)        self.quadruples.append(quadruple)
+        quadruple = Quadruple("GOSUB", None, None, self.current_function_called)        
+        self.quadruples.append(quadruple)
         
         
 
