@@ -7,7 +7,7 @@ def compile_snippet(code, compiler):
     """Helper to avoid repeating parsing."""
     parser, lexer, gen = compiler
     parser.parse(code, lexer=lexer)
-    return gen.get_constants_table()._by_value_map
+    return gen.get_constants_table().value_addr_map
 
 
 # ────────────────────────────────────────────────────────────────────
