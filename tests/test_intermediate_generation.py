@@ -22,7 +22,7 @@ def test_arithmetic_expression_generates_expected_quads(compiler):
 
     # unique temporals
     const_tbl = gen.get_constants_table()
-    assert len(const_tbl._by_addr_map) == 4
+    assert len(const_tbl.value_addr_map) == 4
 
     # 'a' address in FunctionDir matches destination of '='
     addr_a = gen.get_function_dir().get_var(GLOBAL_FUNC_NAME, 'a').address
@@ -63,16 +63,21 @@ def test_print_deduplicates_string_constants(compiler):
     """
     parser.parse(code, lexer=lexer)
 
-    # only one string constant in the table
-    strings = [e for e in gen.get_constants_table()._by_addr_map.values()
-               if e.const_type == 'string']
-    assert len(strings) == 1 and strings[0].value == "hola"
+    const_table = gen.get_constants_table()
 
-    # two PRINT operations pointing to the SAME address
+    # should have only one string constant "hola"
+    string_keys = [key for key in const_table.value_addr_map
+                if key[1] == "string"]            # (value, type)
+    assert len(string_keys) == 1 and string_keys[0][0] == "hola"
+
+    addr_hola = const_table.value_addr_map[string_keys[0]]
+
+    # two PRINT operations pointing to **the same** address
     print_quads = [q for q in gen.get_quadruples().quadruples
-                   if q.operator == 'PRINT']
+                if q.operator == "PRINT"]
     assert len(print_quads) == 2
-    assert print_quads[0].result == print_quads[1].result == next(iter(gen.get_constants_table()._by_addr_map))
+    
+    assert print_quads[0].result == print_quads[1].result == addr_hola
 
 
 # ────────────────────────────────────────────────────────────────────
@@ -107,4 +112,6 @@ def test_local_vs_global_addresses(compiler):
     # '=' quad in foo uses addr_local
     quads = gen.get_quadruples().quadruples
     eq_foo = next(q for q in quads if q.operator == '=' and q.result == addr_local)
-    assert eq_foo.left in gen.get_constants_table()._by_addr_map  # assigns literal 1
+    const_tbl = gen.get_constants_table()
+    
+    assert eq_foo.left in const_tbl.value_addr_map.values()
