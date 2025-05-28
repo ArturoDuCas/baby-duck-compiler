@@ -38,7 +38,7 @@ class Memory:
 
         return {
             var.address: None
-            for var in global_var_table._table.values()      # .values() give us var objects
+            for var in global_var_table.get_vars()
         }
     
     
