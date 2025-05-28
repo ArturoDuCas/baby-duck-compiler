@@ -29,13 +29,23 @@ class VarTable:
             raise DuplicateVariableError(name)
         
         self._table[name] = Var(var_type, addr)
-        
+
+
     def get_var(self, name: str) -> Var | None:
         """
         Returns the variable with the given name, or None if not found.
         """
         
         return self._table.get(name)
+
+
+    def get_vars(self) -> list[Var]:
+        """
+        Returns the variables in the table.
+        """
+
+        return self._table.values()
+
 
     def dump(self) -> str:
         """Returns the table line by line ordered by variable name."""

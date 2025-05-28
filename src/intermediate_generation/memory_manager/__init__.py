@@ -1,7 +1,8 @@
-from .memory_manager import MemoryManager, SegmentType, BLOCK_SIZE
+from .memory_manager import MemoryManager, SegmentType, BLOCK_SIZE, LocalOrTempType
 
 __all__ = [
   "MemoryManager",
   "SegmentType",
-  "BLOCK_SIZE"
+  "BLOCK_SIZE",
+  "LocalOrTempType"
   ]

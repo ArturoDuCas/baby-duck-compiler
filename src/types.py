@@ -7,10 +7,13 @@ class FunctionTypeEnum(str, Enum):
 
 
 # variable types
-VarType = Literal["int", "float", "string"]
+NumericValueType = Literal["int", "float"]
+VarType = Literal[NumericValueType, "string"]
 
+ArithmeticOperatorType = Literal["+", "-", "*", "/"]
+RelationalOperatorType = Literal["<", ">", "!="]
 EndType = Literal["END_FUNC", "END_PROG"]
-BaseOperatorType = Literal["+", "-", "*", "/", "<", ">", "!=", "=", "PRINT", "GOTO", "GOTOF", "PARAM", "ERA", "GOSUB"]
+BaseOperatorType = Literal[ArithmeticOperatorType, RelationalOperatorType, "=", "PRINT", "GOTO", "GOTOF", "PARAM", "ERA", "GOSUB"]
 
 OperatorType = EndType | BaseOperatorType 
 

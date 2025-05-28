@@ -1,21 +1,7 @@
-from dataclasses import dataclass
 from typing import Optional
 from src.types import OperatorType
 from src.errors.internal_compiler_error import CompilerBug
-
-@dataclass
-class Quadruple:
-    operator: OperatorType
-    left: Optional[str]
-    right: Optional[str]
-    result: Optional[str]
-    
-    def __repr__(self) -> str:
-        """Return a compact, column-aligned representation."""
-        l = self.left   if self.left   is not None else "-"
-        r = self.right  if self.right  is not None else "-"
-        res = self.result if self.result is not None else "-"
-        return f"{self.operator:<6} {l:<6} {r:<6} {res}"
+from src.intermediate_generation.quadruple import Quadruple
 
 
 class QuadruplesList: 
@@ -25,9 +11,8 @@ class QuadruplesList:
         self.quadruples: list[Quadruple] = []
         self.next_quad: int = 0
 
-    def append(self, operator: OperatorType, left: Optional[str], right: Optional[str], result: Optional[str]):
+    def append(self, quadruple: Quadruple) -> None:
         """Append a new quadruple to the list."""
-        quadruple = Quadruple(operator, left, right, result)
         self.quadruples.append(quadruple)
         self.next_quad += 1
     

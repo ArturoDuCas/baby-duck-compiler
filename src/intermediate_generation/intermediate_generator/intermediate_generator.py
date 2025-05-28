@@ -1,17 +1,18 @@
 from src.intermediate_generation.operands_stack import OperandsStack
 from src.intermediate_generation.operators_stack import OperatorsStack
 from src.intermediate_generation.quadruples_list import QuadruplesList
-from src.intermediate_generation.constants_table import ConstantTable
+from src.intermediate_generation.constants_table import ConstantsTable
 from src.intermediate_generation.hierarchy import has_greater_or_equal_precedence
 from src.intermediate_generation.memory_manager import MemoryManager
 from src.intermediate_generation.jump_stack import JumpStack
 from src.semantic.semantic_cube import get_resulting_type
 from src.types import ValueType, FunctionTypeEnum, EndType
 from typing import Literal
-from src.semantic.constants import GLOBAL_FUNC_NAME, FAKE_BOTTOM
+from src.semantic.constants import FAKE_BOTTOM
 from src.errors.internal_compiler_error import CompilerBug
 from src.semantic.function_dir import FunctionDir
 from src.virtual_machine.frame_resources import FrameResources
+from src.intermediate_generation.quadruple import Quadruple
 
 TokenType = Literal["CTE_STRING", "CTE_INT", "ID"]
 
@@ -24,7 +25,7 @@ class IntermediateGenerator:
         self.operands_stack = OperandsStack()
         self.operators_stack = OperatorsStack()
         self.quadruples = QuadruplesList()
-        self.constants_table = ConstantTable(memory_manager)
+        self.constants_table = ConstantsTable(memory_manager)
         self.jump_stack = JumpStack()
 
         self.current_function_called = None # function name of the last function called
@@ -39,13 +40,15 @@ class IntermediateGenerator:
         temp_addr = self.memory_manager.new_addr("temp", result_type)
         
         # add the cuadruple to the list and the result to the operands stack
-        self.quadruples.append(operator, left.addr, right.addr, temp_addr)
+        quadruple = Quadruple(operator, left.addr, right.addr, temp_addr)
+        self.quadruples.append(quadruple)
         self.operands_stack.push(temp_addr, result_type)
 
     def push_initial_quadruple(self): 
         """Add the first quadruple (GOTO) at the beginning of the list."""
         
-        self.quadruples.append("GOTO", None, None, None) # the destination will be patched later
+        quadruple = Quadruple("GOTO", None, None, None)
+        self.quadruples.append(quadruple)
         self.jump_stack.push(self.quadruples.get_actual_index()) # push the index to the stack
 
     def mark_loop_start(self) -> None:
@@ -69,7 +72,8 @@ class IntermediateGenerator:
         self.current_param_index = 0
         
         # add an era quadruple to the list
-        self.quadruples.append("ERA", None, None, func_name)
+        quadruple = Quadruple("ERA", None, None, func_name)
+        self.quadruples.append(quadruple)
     
     def handle_function_call_finished(self) -> None:
         """
@@ -82,7 +86,9 @@ class IntermediateGenerator:
                                                     self.current_param_index)
 
         # add the GOSUB quadruple
-        self.quadruples.append("GOSUB", None, None, self.current_function_called)        
+        quadruple = Quadruple("GOSUB", None, None, self.current_function_called)        
+        self.quadruples.append(quadruple)
+        
         
 
     def handle_new_param(self) -> None:
@@ -94,7 +100,8 @@ class IntermediateGenerator:
         param_addr = self.operands_stack.pop()
         
         # add the quadruple for the parameter
-        self.quadruples.append("PARAM", None, None, param_addr.addr)
+        quadruple = Quadruple("PARAM", None, None, param_addr.addr)
+        self.quadruples.append(quadruple)
         
         # validate the signature of the function
         self.function_dir.validate_signature_argument(self.current_function_called,
@@ -113,7 +120,8 @@ class IntermediateGenerator:
         last_quad = self.quadruples.get_last_quadruple()
         
         # add the GOTOF quadruple, let the destination empty for now
-        self.quadruples.append("GOTOF", last_quad.result, None, None)
+        quadruple = Quadruple("GOTOF", last_quad.result, None, None)
+        self.quadruples.append(quadruple)
         self.jump_stack.push(self.quadruples.get_actual_index())
 
     def assign_goto_destination(self) -> None:
@@ -152,7 +160,8 @@ class IntermediateGenerator:
         self.memory_manager.reset_segment("temp")
         
         # add quadruple for function end
-        self.quadruples.append(end_type, None, None, None)
+        quadruple = Quadruple(end_type, None, None, None)
+        self.quadruples.append(quadruple)
 
     def handle_else(self) -> None:
         """Handle the else statement."""
@@ -161,7 +170,8 @@ class IntermediateGenerator:
         gotof_quad_idx = self.jump_stack.pop()
         
         # add a GOTO to skip the else block (to be patched later)
-        self.quadruples.append("GOTO", None, None, None)
+        quadruple = Quadruple("GOTO", None, None, None)
+        self.quadruples.append(quadruple)
         self.jump_stack.push(self.quadruples.get_actual_index())
         
         # patch the GOTOF to jump here (exit point of the statement)
@@ -177,7 +187,8 @@ class IntermediateGenerator:
         loop_start_idx = self.jump_stack.pop()
         
         # append an unconditional GOTO to re-evaluate the loop condition
-        self.quadruples.append("GOTO", None, None, loop_start_idx)
+        quadruple = Quadruple("GOTO", None, None, loop_start_idx)
+        self.quadruples.append(quadruple)
 
         # patch the GOTOF to jump here (exit point of the loop)
         self.quadruples[gotof_quad_idx].result = self.quadruples.next_quad
@@ -193,15 +204,16 @@ class IntermediateGenerator:
         value_to_assign = self.operands_stack.pop()
         var_to_record = self.function_dir.get_var(current_scope, var_name)
 
-        self.quadruples.append(operator, value_to_assign.addr, None , var_to_record.address)
-        
-    
+        quadruple = Quadruple(operator, value_to_assign.addr, None, var_to_record.address)
+        self.quadruples.append(quadruple)
+
     def create_print_quadruple(self):
         """Create a print quadruple."""
         operator = "PRINT"
         value_to_print = self.operands_stack.pop()
-        
-        self.quadruples.append(operator, value_to_print.addr, None, None)
+
+        quadruple = Quadruple(operator, None, None, value_to_print.addr)
+        self.quadruples.append(quadruple)
 
 
     def pop_until_bottom(self):
@@ -273,7 +285,7 @@ class IntermediateGenerator:
         self.operands_stack = OperandsStack()
         self.operators_stack = OperatorsStack()
         self.quadruples = QuadruplesList()
-        self.constants_table = ConstantTable(self.memory_manager)
+        self.constants_table = ConstantsTable(self.memory_manager)
         self.jump_stack = JumpStack()
         self.current_function_called = None
         self.current_param_index = 0        

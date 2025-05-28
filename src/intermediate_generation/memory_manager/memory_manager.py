@@ -1,10 +1,11 @@
-from typing import Literal, Dict
+from typing import Literal
 from src.types import VarType
 
-SegmentType = Literal["global", "local", "temp", "const"]
-CountersType = Dict[SegmentType, Dict[VarType, int]] # segment -> var_type -> count
+LocalOrTempType = Literal["local", "temp"]
+SegmentType = Literal["global", LocalOrTempType, "const"]
+CountersType = dict[SegmentType, dict[VarType, int]] # segment -> var_type -> count
 
-SEGMENT_BASE: Dict[SegmentType, int] = {
+SEGMENT_BASE: dict[SegmentType, int] = {
     "global": 10000,
     "local":  20000,
     "temp":   30000,
@@ -28,6 +29,42 @@ class MemoryManager:
         }
     
     @staticmethod
+    def decode_address(address: int) -> tuple[SegmentType, VarType, int]:
+        """
+        Decodes an address into its segment, variable type, and index.
+        E.g.: 10005 -> ("global", "int", 5)
+        """
+
+        # determine the segment
+        segment = None
+        for seg, base in SEGMENT_BASE.items():
+            max_offset = max(TYPE_OFFSET.values()) + BLOCK_SIZE
+            if base <= address < base + max_offset:
+                segment = seg
+                break
+        if not segment:
+            raise ValueError(f"Invalid address: {address}")
+
+        # calculate offset within the segment
+        segment_offset = address - SEGMENT_BASE[segment]
+
+        # determine the variable type and index
+        var_type = None
+        for vt, vt_offset in sorted(TYPE_OFFSET.items(), key=lambda x: -x[1]):
+            if segment_offset >= vt_offset:
+                var_type = vt
+                idx = segment_offset - vt_offset 
+                if idx >= BLOCK_SIZE:
+                    raise ValueError(f"Invalid address: {address}")
+                break
+
+        if not var_type or idx >= BLOCK_SIZE:
+            raise ValueError(f"Invalid address: {address}")
+
+        return segment, var_type, idx
+    
+    
+    @staticmethod
     def get_base_addr(segment: SegmentType, var_type: VarType) -> int:
         """Returns the base address for the given segment and variable type."""
         
@@ -46,7 +83,8 @@ class MemoryManager:
         base_addr = self.get_base_addr(segment, var_type)
         return base_addr + idx
 
-    def snapshot_segment(self, segment: SegmentType) -> Dict[VarType, int]:
+
+    def snapshot_segment(self, segment: SegmentType) -> dict[VarType, int]:
         """
         Returns a snapshot of the current state of the given segment.
         E.g.: {"int": 5, "float": 3}
