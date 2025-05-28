@@ -79,7 +79,8 @@ class FunctionDir:
         
         func = self.get_function(func_name)
         return func.var_table.get_var(var_name)
-    
+
+
     def get_var(self, func_name: str, var_name: str) -> Var:
         """
         Returns the variable with the given name from the function's variable table.
@@ -96,6 +97,15 @@ class FunctionDir:
         return var
 
 
+    def get_var_table(self, func_name: str) -> VarTable:
+        """
+        Returns the variable table of the function with the given name.
+        """
+        
+        func = self.get_function(func_name)
+        return func.var_table
+    
+
     def set_frame_resources(self, func_name: str, frame_resources: FrameResources) -> None:
         """Sets the frame resources for the function."""
         
@@ -107,7 +117,8 @@ class FunctionDir:
         """Adds a type to the function's signature."""
         func = self.get_function(func_name)
         func.signature.append(type)
-    
+
+
     def validate_signature_argument(self, func_name: str, param_type: VarType, current_index: int) -> None:
         """
         Validates an argument from the function's signature.
@@ -131,7 +142,8 @@ class FunctionDir:
                 expected_type,
                 param_type,
             )
-    
+
+
     def validate_signature_length(self, func_name: str, length: int) -> None:
         """
         Checks if the function has a signature of the given length.
@@ -143,6 +155,7 @@ class FunctionDir:
                 len(func.signature),
                 length,
             )
+
 
     def dump(self) -> str:
         col_head = (
