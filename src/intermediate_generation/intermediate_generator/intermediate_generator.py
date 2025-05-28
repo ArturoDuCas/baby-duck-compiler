@@ -8,7 +8,7 @@ from src.intermediate_generation.jump_stack import JumpStack
 from src.semantic.semantic_cube import get_resulting_type
 from src.types import ValueType, FunctionTypeEnum, EndType
 from typing import Literal
-from src.semantic.constants import GLOBAL_FUNC_NAME, FAKE_BOTTOM
+from src.semantic.constants import FAKE_BOTTOM
 from src.errors.internal_compiler_error import CompilerBug
 from src.semantic.function_dir import FunctionDir
 from src.virtual_machine.frame_resources import FrameResources
@@ -285,7 +285,7 @@ class IntermediateGenerator:
         self.operands_stack = OperandsStack()
         self.operators_stack = OperatorsStack()
         self.quadruples = QuadruplesList()
-        self.constants_table = ConstantTable(self.memory_manager)
+        self.constants_table = ConstantsTable(self.memory_manager)
         self.jump_stack = JumpStack()
         self.current_function_called = None
         self.current_param_index = 0        
