@@ -1,6 +1,6 @@
 from src.intermediate_generation.quadruple import Quadruple
 from src.virtual_machine.memory import Memory
-
+from typing import Optional
 
 class CPU:
     def __init__(self, memory: Memory):
@@ -8,7 +8,7 @@ class CPU:
         self.instruction_pointer = 0
         self.call_stack = []
 
-    def get_next_instruction(self, quadruples: list[Quadruple]) -> Quadruple:
+    def get_next_instruction(self, quadruples: list[Quadruple]) -> Optional[Quadruple]:
         """
         Fetch the next instruction from the quadruples list.
         """
