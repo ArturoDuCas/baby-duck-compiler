@@ -6,7 +6,6 @@ class CPU:
     def __init__(self, memory: Memory):
         self.memory = memory
         self.instruction_pointer = 0
-        self.call_stack = []
 
     def get_next_instruction(self, quadruples: list[Quadruple]) -> Optional[Quadruple]:
         """

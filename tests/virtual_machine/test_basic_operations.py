@@ -2,7 +2,7 @@ import pytest
 from src.virtual_machine.virtual_machine import VirtualMachine
 from src.semantic.constants import GLOBAL_FUNC_NAME
 
-
+# Test basic print statement output
 def test_print_statements(compiler, capsys):
     parser, lexer, gen = compiler
     code = """
@@ -23,6 +23,7 @@ def test_print_statements(compiler, capsys):
     assert captured.out == "Hola mundo\n"
 
 
+# Test arithmetic operations with integers and floats
 def test_arithmetic_operations(compiler):
     parser, lexer, gen = compiler
     code = """
@@ -51,6 +52,7 @@ def test_arithmetic_operations(compiler):
     assert vm.memory.get_value(addr_b) == pytest.approx(3.5 * 2.0 - 4.0 / 2.0)
 
 
+# Test comparison operators and boolean assignment (int 1/0)
 def test_comparisons_and_boolean_assignment(compiler):
     parser, lexer, gen = compiler
     code = """
@@ -74,6 +76,7 @@ def test_comparisons_and_boolean_assignment(compiler):
     assert vm.memory.get_value(fd.get_var(GLOBAL_FUNC_NAME, 'c').address) == 0
 
 
+# Test printing variables and constants
 def test_print_var_and_const(compiler, capsys):
     parser, lexer, gen = compiler
     code = """
@@ -95,6 +98,7 @@ def test_print_var_and_const(compiler, capsys):
     assert captured.out == "42\n99\n"
 
 
+# Test if-else logic with GOTO and GOTOF
 def test_if_else_with_goto_and_gotof(compiler):
     parser, lexer, gen = compiler
     code = """
@@ -118,6 +122,7 @@ def test_if_else_with_goto_and_gotof(compiler):
     assert vm.memory.get_value(addr_res) == 100
 
 
+# Test while loop increments variable until condition is false
 def test_while_loop(compiler):
     parser, lexer, gen = compiler
     code = """
@@ -140,6 +145,7 @@ def test_while_loop(compiler):
     assert vm.memory.get_value(addr_i) == 3
 
 
+# Test division operation and result
 def test_division_and_zero_division_error(compiler):
     parser, lexer, gen = compiler
     code = """
@@ -159,6 +165,7 @@ def test_division_and_zero_division_error(compiler):
     assert vm.memory.get_value(addr_x) == 5
 
 
+# Test ZeroDivisionError is raised on division by 0
 def test_division_by_zero_raises(compiler):
     parser, lexer, gen = compiler
     code = """
