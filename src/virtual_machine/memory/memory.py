@@ -18,6 +18,7 @@ class Memory:
         self.constants = self._load_constants(constants_table)
         self.globals = self._load_globals(function_dir)
         self.call_stack = CallStack()
+        self.pending_call_entry: CallStackEntry | None = None  # used for function calls that are not yet executed (before GOSUB quadruple)
 
         # create a mapping of function names to their frame resources
         self.runtime_info_map = FunctionRuntimeInfoMap(function_dir)
@@ -54,6 +55,17 @@ class Memory:
         }
     
 
+    def prepare_call(self, function_name: str) -> None:
+        """
+        Prepare a call stack entry for the given function name that is going to be added
+        to the stack when we move to the function (GOSUB quadruple).
+        """
+        function_resources = self.runtime_info_map.get_frame_resources(function_name)
+        self.pending_call_entry = CallStackEntry(
+            function_name,
+            ActivationRecord(function_resources),
+            None
+        )
     
     def push_call(self, function_name: str) -> None:
         """
@@ -114,14 +126,17 @@ class Memory:
 
     def set_param_value(self, param_index: int, value: ValueType) -> None:
         """
-        Sets the value of a parameter in the current function's activation record.
+        Sets the value of a parameter in the pending call entry's activation record.
         """
-        current_func = self.call_stack.get_current_function_name()
-        signature = self.runtime_info_map.get_signature(current_func)
+        if not self.pending_call_entry:
+            raise RuntimeError("No pending activation record to set parameter value.")
+        
+        pending_call_entry = self.pending_call_entry
+        signature = self.runtime_info_map.get_signature(pending_call_entry.function_name)
 
-        activation_record = self.call_stack.get_current_activation_record()
-        activation_record.set_value("local", signature[param_index], param_index, value)
-    
+        pending_call_entry.activation_record.set_value("local", signature[param_index], param_index, value)
+
+
     def get_function_initial_quad_index(self, function_name: str) -> int:
         """
         Returns the initial quadruple index for the given function name.
@@ -130,9 +145,15 @@ class Memory:
         return self.runtime_info_map.get_initial_quad_index(function_name)
 
 
-    def set_return_index(self, index: int) -> None:
+    def push_pending_call_entry(self, return_index: int) -> None:
         """
-        Sets the return index of the current function call.
+        Pushes the pending call entry onto the call stack and sets its return index.
         """
+        if not self.pending_call_entry:
+            raise RuntimeError("No pending call entry to push.")
 
-        self.call_stack.set_return_index(index)
+        self.pending_call_entry.return_index = return_index
+        self.call_stack.push(self.pending_call_entry)
+        
+        # reset the pending call entry
+        self.pending_call_entry = None

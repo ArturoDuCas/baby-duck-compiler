@@ -60,20 +60,18 @@ class CPU:
                 if left == 0:
                     self._goto_result(result_addr)
             case "ERA": 
-                function_name = result_addr                  # result_addr is the function name
-                back_position = self.instruction_pointer + 1 # when the function finishes, it will return to the next instruction
+                function_name = result_addr  # result_addr is the function name
 
-                self.memory.push_call(function_name)
+                self.memory.prepare_call(function_name)
             case "PARAM":
                 param_index = result_addr  # result_addr is the parameter index
                 
                 self.memory.set_param_value(param_index, left)
             case "GOSUB":
-                function_name = result_addr # result_addr is the function name
+                self.memory.push_pending_call_entry(self.instruction_pointer + 1)
                 
-                # set back position for the function call
-                self.memory.set_return_index(self.instruction_pointer + 1)
-
+                function_name = result_addr
+                
                 # go to the initial quadruple index of the function
                 function_initial_quad_index = self.memory.get_function_initial_quad_index(function_name)
                 self.instruction_pointer = function_initial_quad_index - 1 # -1 because it will be incremented after this method call
