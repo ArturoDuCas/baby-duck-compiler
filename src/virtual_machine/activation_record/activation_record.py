@@ -57,3 +57,26 @@ class ActivationRecord:
                         self.temp_int[idx] = value
                     case "float":
                         self.temp_float[idx] = value
+    
+    
+    def dump(self) -> str:
+        """ 
+        Dumps the contents of the activation record in a readable format.
+        """
+        
+        def fmt(label: str, values: list):
+            return f"{label:<12}: {values}"
+
+        lines = [
+            "ActivationRecord",
+            "─" * 40,
+            fmt("Locals  int",   self.local_int),
+            fmt("Locals float", self.local_float),
+            fmt("Temps   int",   self.temp_int),
+            fmt("Temps  float", self.temp_float),
+        ]
+        return "\n".join(lines)
+
+
+    def __repr__(self) -> str:
+        return self.dump()
