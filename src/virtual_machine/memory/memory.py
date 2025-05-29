@@ -2,22 +2,34 @@ from src.intermediate_generation.constants_table import ConstantsTable
 from src.semantic.function_dir import FunctionDir
 from src.semantic.constants import GLOBAL_FUNC_NAME
 from src.virtual_machine.activation_record import ActivationRecord
-from src.virtual_machine.frame_resources import FrameResources
 from src.types import ValueType
 from src.intermediate_generation.memory_manager import MemoryManager
+from src.virtual_machine.call_stack import CallStack, CallStackEntry
+from src.virtual_machine.function_runtime_info_map import FunctionRuntimeInfoMap
 
 
 class Memory:
+    """
+    Manages the memory for the virtual machine, including constants, globals,
+    and the call stack.
+    """
+
     def __init__(self, constants_table: ConstantsTable, function_dir: FunctionDir):
         self.constants = self._load_constants(constants_table)
         self.globals = self._load_globals(function_dir)
-        self.stack: list[ActivationRecord] = []
-        
+        self.call_stack = CallStack()
+
+        # create a mapping of function names to their frame resources
+        self.runtime_info_map = FunctionRuntimeInfoMap(function_dir)
+
         # initialize the stack with the global activation record
-        global_function = function_dir.get_function(GLOBAL_FUNC_NAME)
-        self.stack.append(ActivationRecord(global_function.frame_resources))
-        
-    
+        self.call_stack.push(CallStackEntry(
+            GLOBAL_FUNC_NAME,
+            ActivationRecord(self.runtime_info_map.get_frame_resources(GLOBAL_FUNC_NAME)),
+            None
+        ))
+
+
     def _load_constants(self, constants_table: ConstantsTable) -> dict:
         """
         Loads constants from the constants table into a dictionary.
@@ -41,24 +53,29 @@ class Memory:
             for var in global_var_table.get_vars()
         }
     
+
     
-    def push_frame(self, frame_resources: FrameResources) -> None:
+    def push_call(self, function_name: str) -> None:
         """
-        Pushes a new activation record onto the stack.
+        Pushes a new activation record onto the call stack for the given function name.
         """
-        
-        self.stack.append(ActivationRecord(frame_resources))
+        function_resources = self.runtime_info_map.get_frame_resources(function_name)
+
+        self.call_stack.push(CallStackEntry(
+            function_name, 
+            ActivationRecord(function_resources),
+            None # back_position will be set when the function is called
+            ))
 
 
-    def pop_frame(self) -> ActivationRecord:
+    def pop_call(self) -> int:
         """
-        Pops the top activation record from the stack.
+        Pops the top activation record from the call stack and returns the return index.
         """
-        
-        if not self.stack:
-            raise IndexError("Stack is empty, cannot pop frame.")
-        
-        return self.stack.pop()
+
+        call_stack_entry = self.call_stack.pop()
+
+        return call_stack_entry.return_index
 
 
     def get_value(self, address: int) -> ValueType | None:
@@ -74,9 +91,10 @@ class Memory:
             case "global":
                 return self.globals.get(address)
             case "local" | "temp":
-                return self.stack[-1].get_value(segment, var_type, idx)
-            
-    
+                activation_record = self.call_stack.get_current_activation_record()
+                return activation_record.get_value(segment, var_type, idx)
+
+
     def set_value(self, address: int, value: ValueType) -> None:
         """
         Sets the value stored at the given address.
@@ -90,4 +108,31 @@ class Memory:
             case "global":
                 self.globals[address] = value
             case "local" | "temp":
-                self.stack[-1].set_value(segment, var_type, idx, value)
+                activation_record = self.call_stack.get_current_activation_record()
+                activation_record.set_value(segment, var_type, idx, value)
+
+
+    def set_param_value(self, param_index: int, value: ValueType) -> None:
+        """
+        Sets the value of a parameter in the current function's activation record.
+        """
+        current_func = self.call_stack.get_current_function_name()
+        signature = self.runtime_info_map.get_signature(current_func)
+
+        activation_record = self.call_stack.get_current_activation_record()
+        activation_record.set_value("local", signature[param_index], param_index, value)
+    
+    def get_function_initial_quad_index(self, function_name: str) -> int:
+        """
+        Returns the initial quadruple index for the given function name.
+        """
+
+        return self.runtime_info_map.get_initial_quad_index(function_name)
+
+
+    def set_return_index(self, index: int) -> None:
+        """
+        Sets the return index of the current function call.
+        """
+
+        self.call_stack.set_return_index(index)

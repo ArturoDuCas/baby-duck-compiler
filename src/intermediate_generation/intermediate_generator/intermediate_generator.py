@@ -100,7 +100,7 @@ class IntermediateGenerator:
         param_addr = self.operands_stack.pop()
         
         # add the quadruple for the parameter
-        quadruple = Quadruple("PARAM", None, None, param_addr.addr)
+        quadruple = Quadruple("PARAM", param_addr.addr, None, self.current_param_index)
         self.quadruples.append(quadruple)
         
         # validate the signature of the function

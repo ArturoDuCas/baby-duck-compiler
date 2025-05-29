@@ -59,6 +59,28 @@ class CPU:
             case "GOTOF":
                 if left == 0:
                     self._goto_result(result_addr)
+            case "ERA": 
+                function_name = result_addr                  # result_addr is the function name
+                back_position = self.instruction_pointer + 1 # when the function finishes, it will return to the next instruction
+
+                self.memory.push_call(function_name)
+            case "PARAM":
+                param_index = result_addr  # result_addr is the parameter index
+                
+                self.memory.set_param_value(param_index, left)
+            case "GOSUB":
+                function_name = result_addr # result_addr is the function name
+                
+                # set back position for the function call
+                self.memory.set_return_index(self.instruction_pointer + 1)
+
+                # go to the initial quadruple index of the function
+                function_initial_quad_index = self.memory.get_function_initial_quad_index(function_name)
+                self.instruction_pointer = function_initial_quad_index - 1 # -1 because it will be incremented after this method call
+            case "END_FUNC":
+                back_position = self.memory.pop_call()  # pop the call stack to get the back position
+                
+                self.instruction_pointer = back_position - 1  # -1 because it will be incremented after this method call
             case _:
                 raise NotImplementedError(f"Operator {operator} is not implemented.")
     
