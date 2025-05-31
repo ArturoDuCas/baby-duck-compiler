@@ -7,13 +7,15 @@ from src.intermediate_generation.memory_manager import MemoryManager
 from src.types import VarType, FunctionTypeEnum
 from src.virtual_machine.frame_resources import FrameResources
 
+SignatureType = list[VarType]
+
 # create types
 @dataclass
 class Function:
     type: FunctionTypeEnum
     var_table: VarTable
     initial_quad_index: int
-    signature: list[VarType] = field(default_factory=list)
+    signature: SignatureType = field(default_factory=list)
     frame_resources: FrameResources | None = None
 
 
@@ -61,6 +63,13 @@ class FunctionDir:
         func = self.get_function(func_name)     
         func.var_table.add_var(var_name, var_type, addr)
 
+
+    def get_function_dir(self) -> FunctionDirType:
+        """
+        Returns the function directory.
+        """
+        
+        return self._dir
 
     def get_function(self, name: str) -> Function:
         """

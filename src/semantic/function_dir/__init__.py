@@ -1,3 +1,3 @@
-from .function_dir import FunctionDir
+from .function_dir import FunctionDir, SignatureType
 
-__all__ = [FunctionDir]
+__all__ = [FunctionDir, SignatureType]
